@@ -1,0 +1,61 @@
+{
+  "name": "erreur notification",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -112
+      ],
+      "id": "d54d3002-e5ee-41e0-a022-9456cc2f8604",
+      "name": "Error Trigger",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL@example.com",
+        "subject": "Error notification ",
+        "emailType": "text",
+        "message": "=an error is detected here are the details : \n\nWorkflow Name : {{ $json.workflow.name }}\nWorkflow URL : {{ $json.execution.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        -128
+      ],
+      "id": "c3b0378c-5cff-4748-bbdb-ceacc5dc0bb7",
+      "name": "Send a message",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": [],
+  "tags": []
+}
