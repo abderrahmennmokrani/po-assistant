@@ -19,15 +19,14 @@
       "id": "325fef42-4df7-49da-ab39-0472a4a29d7b",
       "name": "Slack Trigger",
       "alwaysOutputData": false,
-      "retryOnFail": true,
+      "retryOnFail": false,
       "notesInFlow": true,
       "credentials": {
         "slackApi": {
           "id": "YOUR_CREDENTIAL_ID",
           "name": "Slack account"
         }
-      },
-      "onError": "continueErrorOutput"
+      }
     },
     {
       "parameters": {
@@ -41,21 +40,11 @@
           "conditions": [
             {
               "id": "b49d8c03-dda7-420b-9a4e-2225c460f4dc",
-              "leftValue": "={{ $json.bot_id }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notExists",
-                "singleValue": true
-              }
-            },
-            {
-              "id": "476c41a8-b9bf-4fc3-af36-96eba5767d01",
-              "leftValue": "={{ ['message_changed','message_deleted'].includes($json.subtype ?? '') }}",
+              "leftValue": "={{ $json.type === 'message' && !$json.bot_id && (!$json.subtype || ($json.subtype === 'channel_join' && $json.user === 'YOUR_BOT_USER_ID')) }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
-                "operation": "false",
+                "operation": "true",
                 "singleValue": true
               }
             }
@@ -67,8 +56,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1024,
-        -1424
+        -1360,
+        -1360
       ],
       "id": "f10df906-fee7-4e3b-978a-bd3f8c0880bc",
       "name": "Check for bot message",
@@ -104,10 +93,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -544,
-        -1568
+        -848,
+        -1488
       ],
-      "id": "0cf16274-0578-4d20-a889-9b9efc77bd27",
+      "id": "5ef61593-9d47-436c-8a78-71f6d2ecac20",
       "name": "If",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -123,12 +112,12 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -736,
-        -1440
+        -1040,
+        -1360
       ],
-      "id": "682b8503-9fdb-4cb0-be4c-a05a6b2b82c6",
+      "id": "2cd231e2-685c-441a-bfed-edf9c1940ad2",
       "name": "Execute a SQL query",
-      "alwaysOutputData": false,
+      "alwaysOutputData": true,
       "retryOnFail": true,
       "credentials": {
         "postgres": {
@@ -194,11 +183,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -320,
-        -1728
+        -624,
+        -1648
       ],
       "name": "Sub workflow - PO Assistant - 01 Elevator Pitch",
-      "id": "52ff3347-9876-43d4-b019-b70421fb9dc6",
+      "id": "33d5a516-c066-4668-b9fd-4cb78eb89e80",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
     },
@@ -213,10 +202,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -128,
-        -1120
+        -432,
+        -1040
       ],
-      "id": "01634eff-a210-40aa-b196-4de2625cde41",
+      "id": "73fe018d-d0f2-4f9d-95a0-861eaf71b927",
       "name": "Execute a SQL query1",
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -237,10 +226,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        128,
-        -1200
+        -176,
+        -1120
       ],
-      "id": "4c27dd21-5d17-45f4-b65a-090c0894d394",
+      "id": "a72634cd-8eef-47c0-a8b1-c9a8a573c98f",
       "name": "Merge",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -252,7 +241,7 @@
             {
               "id": "bef1d58c-ffc3-4b67-9d5f-97c20c4b4724",
               "name": "user_Input",
-              "value": "={{ $json.text }}",
+              "value": "={{ $('Slack Trigger').item.json.text }}",
               "type": "string"
             }
           ]
@@ -262,10 +251,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -784,
-        -1152
+        -400,
+        -1248
       ],
-      "id": "3cb6e4cf-ad46-47fb-9430-222cba0a45d3",
+      "id": "befabbd8-ccd0-40e1-8350-9f66350d10cc",
       "name": "Edit Fields",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -291,10 +280,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        304,
-        -1392
+        0,
+        -1312
       ],
-      "id": "31f4d78a-8df9-4192-99e4-84fdbda69d43",
+      "id": "b6e2ffc8-35ca-489b-952f-e73c99a27c1a",
       "name": "Call 'PO Assistant - 02 Personna creation'",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -361,10 +350,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -304,
-        -1568
+        -608,
+        -1488
       ],
-      "id": "e3041c02-c8ed-4d3c-8466-d15ed0611ab1",
+      "id": "306f08cb-2b5a-453a-8a43-cd25841aa1d2",
       "name": "redirector",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -374,7 +363,7 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "={{ $json.channel }}",
+          "value": "={{ $('Slack Trigger').item.json.channel }}",
           "mode": "id"
         },
         "text": "=An unexpected error occurred \nThe workflow admin is notified \nPlease try again later",
@@ -383,10 +372,10 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        640,
-        -880
+        336,
+        -800
       ],
-      "id": "83d54d04-eb16-4ffb-aab5-27ec13717256",
+      "id": "0a045af7-90d2-4f17-b8a9-3c888304361b",
       "name": "Error message to user",
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -404,11 +393,39 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        640,
-        -576
+        336,
+        -496
       ],
-      "id": "bf76e327-01f9-4421-af21-3e74da40b691",
+      "id": "5327bf09-5794-43e4-b248-d73d074b2f39",
       "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $json.channel }}",
+          "mode": "id"
+        },
+        "text": "=👀 Message received, processing…",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        -1200,
+        -1648
+      ],
+      "id": "23dc9340-4261-489d-9613-504c26bd1c02",
+      "name": "Received message",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
     },
     {
       "parameters": {
@@ -428,15 +445,15 @@
     },
     {
       "parameters": {
-        "content": "## Entry and filtering\nSlack Trigger, then bot messages and message edits/deletions are ignored (avoids loops and empty runs). The project is looked up in Postgres by channel_id.",
+        "content": "## Entry and filtering\nSlack Trigger, then bot messages and message edits/deletions are ignored (avoids loops). Valid messages get an instant \"Message received\" reply while the project is looked up in Postgres by channel_id.",
         "height": 150,
         "width": 420,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -1100,
-        -1620
+        -1700,
+        -1740
       ],
       "typeVersion": 1,
       "id": "note-note-entry",
@@ -444,7 +461,7 @@
     },
     {
       "parameters": {
-        "content": "## Routing\nNo project yet: Elevator Pitch sub-workflow.\nStatus pitch_validated: Personas and roles sub-workflow (pitch loaded from Postgres and merged with the Slack message).\nStatus personas_and_roles_validated: User stories (not built yet).\nAny other status: error branch.",
+        "content": "## Routing\nNo project yet: Elevator Pitch sub-workflow (it hands over to Personas and roles once the pitch is published).\nStatus pitch_validated: Personas and roles sub-workflow (pitch loaded from Postgres and merged with the Slack message).\nStatus personas_and_roles_validated: next step not built yet (message ignored).\nAny other status: error branch.",
         "height": 200,
         "width": 470,
         "color": 6
@@ -486,47 +503,25 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Check for bot message": {
       "main": [
         [
           {
-            "node": "Execute a SQL query",
+            "node": "Received message",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Edit Fields",
+            "node": "Execute a SQL query",
             "type": "main",
             "index": 0
           }
         ],
         [],
-        [
-          {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "If": {
@@ -582,15 +577,9 @@
         ]
       ]
     },
-    "Execute a SQL query1": {
+    "Sub workflow - PO Assistant - 01 Elevator Pitch": {
       "main": [
-        [
-          {
-            "node": "Merge",
-            "type": "main",
-            "index": 1
-          }
-        ],
+        [],
         [
           {
             "node": "Error message to user",
@@ -605,13 +594,13 @@
         ]
       ]
     },
-    "Edit Fields": {
+    "Execute a SQL query1": {
       "main": [
         [
           {
             "node": "Merge",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ],
         [
@@ -651,16 +640,15 @@
         ]
       ]
     },
-    "redirector": {
+    "Edit Fields": {
       "main": [
         [
           {
-            "node": "Execute a SQL query1",
+            "node": "Merge",
             "type": "main",
             "index": 0
           }
         ],
-        [],
         [
           {
             "node": "Error message to user",
@@ -692,8 +680,20 @@
         ]
       ]
     },
-    "Sub workflow - PO Assistant - 01 Elevator Pitch": {
+    "redirector": {
       "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [],
         [
           {

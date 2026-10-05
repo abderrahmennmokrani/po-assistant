@@ -17,7 +17,7 @@ A Product Owner spends a lot of time producing the same framing documents for ev
 3. You describe your idea in a sentence or two. The bot answers with an elevator pitch, no clarifying questions.
 4. You ask for changes ("shorter", "add a line about pricing") until you validate ("validé", "looks good").
 5. The pitch is saved in Postgres and published as a Confluence page; the link is posted in the channel.
-6. Ask for the users: the bot proposes **personas** (groups of potential users) and **roles** (functions in the product). You correct, then approve both together.
+6. Right after the pitch is published, the bot offers to start the users step. Answer yes and it proposes **personas** (groups of potential users) and **roles** (functions in the product). You correct, then approve both together.
 7. Personas and roles are saved (two tables) and published to Confluence; the project status moves forward.
 
 You can write in any language; the assistant answers in yours.
@@ -46,7 +46,7 @@ The project `status` column is updated last, so it only moves forward if everyth
 - **A dedicated reply agent for blocked messages.** It answers in the user's language, reminds the user of the current step, and never reveals why the message was blocked.
 - **Explicit validation only.** For personas and roles, only a clear approval of both together counts. A bare "ok", a partial approval or a change request is not a validation: the assistant explains it and shows the unchanged list. On validation, the last list is reproduced word for word.
 - **Language rules.** Field labels stay in English. Contents follow the language of the PO's latest message; if the language changes, everything is translated, including persona and role names.
-- **Model split.** Opus 5.5 writes the pitch, Sonnet 5.5 writes personas and roles, Haiku 4.5 handles guardrails, parsing and reply agents. Nodes that need forced structured output use 4.x models, because 5-series models reject forced `tool_choice` through the API.
+- **Model split.** Sonnet 5.5 writes the pitch and the personas and roles, Haiku 4.5 handles guardrails, parsing and reply agents. Nodes that need forced structured output use 4.x models, because 5-series models reject forced `tool_choice` through the API.
 - **Error handling everywhere.** Every node retries, then routes to an error output: the user gets a Slack message, then *Stop and Error* marks the execution as failed so the global Error Workflow emails the admin with the workflow name and an execution link.
 
 ## Repository layout
@@ -66,7 +66,7 @@ evals/       evaluation datasets
 |------|-------|
 | n8n, self-hosted | Tested on 2.40.7. A public HTTPS URL is required because Slack calls your n8n webhook. |
 | Postgres | Tested on 17. |
-| Anthropic API key | Models used: Opus 5.5, Sonnet 5.5, Haiku 4.5 (Opus 4.8 only as LLM judge in the evaluation). |
+| Anthropic API key | Models used: Sonnet 5.5, Haiku 4.5 (Opus 4.8 only as LLM judge in the evaluation). |
 | Slack workspace | Where you can create an app. |
 | Confluence Cloud | A space per project, and an Atlassian API token. |
 | Gmail account | Used by the error workflow to email the admin. |
@@ -117,6 +117,8 @@ Import the four files from `workflows/`. They are exported inactive and without 
 
 - map each node to your credentials;
 - in the orchestrator, **re-select the two sub-workflows** in the *Execute Workflow* nodes;
+- in the orchestrator, replace `YOUR_BOT_USER_ID` in the *Check for bot message* node with your Slack bot's user ID (the only `channel_join` event the bot reacts to is its own);
+- in the pitch workflow, **re-select the personas sub-workflow** in its *Execute Workflow* node;
 - replace `YOUR-DOMAIN.atlassian.net` in the two Confluence nodes, and `YOUR_EMAIL@example.com` in the error workflow;
 - in each workflow's settings, set the **Error Workflow** to the error notification workflow;
 - if you want to run evaluations, recreate the Data Tables and load the datasets from `evals/`.
@@ -135,6 +137,7 @@ Import the four files from `workflows/`. They are exported inactive and without 
 | "An unexpected error occurred" in Slack | Open the failed execution from the admin e-mail. Typical causes: expired Atlassian token, wrong Confluence space key, database unreachable. |
 | Confluence error after a validation | A page with the same title already exists in that space. |
 | Message ignored after the personas step | Expected: the user stories step is not built yet. |
+| Orchestrator stops silently on a new channel | Check that **Always Output Data** is ON for the project lookup node (*Execute a SQL query*). With zero rows and the option off, n8n stops the workflow without any output. |
 
 ## Evaluation
 

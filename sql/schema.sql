@@ -1,16 +1,28 @@
--- PO Assistant — Postgres schema (step 1: elevator pitch)
--- One row per validated pitch. conversation_id = Slack channel ID (one channel = one project).
+-- PO Assistant: Postgres schema (steps 1 and 2)
+-- One channel = one project. channel_id is the Slack channel ID.
+-- status moves forward: pitch_validated, then personas_and_roles_validated.
 
 CREATE TABLE IF NOT EXISTS projects (
     id                    SERIAL PRIMARY KEY,
-    conversation_id       TEXT        NOT NULL,
-    name                  TEXT        NOT NULL,
+    project_name          TEXT NOT NULL,
     jira_key              TEXT,
-    confluence_space_key  TEXT,
     elevator_pitch        TEXT,
     status                TEXT,
-    created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    channel_id            TEXT,
+    created_at            TIMESTAMPTZ DEFAULT now(),
+    confluence_space_key  TEXT
 );
 
--- The chat memory table used by the "Postgres Chat Memory" node
--- is managed by n8n itself (default name: n8n_chat_histories).
+-- Validated personas and roles, stored as JSON arrays (one row per validation).
+CREATE TABLE IF NOT EXISTS personas (
+    project_id  INTEGER REFERENCES projects(id),
+    personas    JSONB
+);
+
+CREATE TABLE IF NOT EXISTS roles (
+    project_id  INTEGER REFERENCES projects(id),
+    roles       JSONB
+);
+
+-- The chat memory table (default name n8n_chat_histories, session_id = Slack channel ID)
+-- is created and managed by n8n's Postgres Chat Memory node.
