@@ -19,7 +19,7 @@ A Product Owner spends a lot of time producing the same framing documents for ev
 5. The pitch is saved in Postgres and published as a Confluence page; the link is posted in the channel.
 6. Right after the pitch is published, the bot offers to start the users step. Answer yes and it proposes **personas** (groups of potential users) and **roles** (functions in the product). You correct, then approve both together.
 7. Personas and roles are saved (two tables) and published to Confluence; the project status moves forward.
-8. Say you want the roadmap. The bot proposes a **vision**, an **objective**, a **journey** and **epics** grouped in Now / Next / Later, each with a description, its features and its business rules. You ask for changes ("move the last Now epic to Next", "why is this one in Now?") until you validate.
+8. Right after the personas and roles are validated, the bot asks whether you want to start the roadmap. Answer yes and it proposes a **vision**, an **objective**, a **journey** and **epics** grouped in Now / Next / Later, each with a description, its features and its business rules. You ask for changes ("move the last Now epic to Next", "why is this one in Now?") until you validate.
 9. The validated roadmap is saved (one row for the roadmap, one row per epic) and published to Confluence; the project status becomes `roadmap_validated`.
 
 You can write in any language; the assistant answers in yours.
@@ -128,7 +128,7 @@ Import the five files from `workflows/`. They are exported inactive and without 
 | "An unexpected error occurred" in Slack | Open the failed execution from the admin e-mail. Typical causes: expired Atlassian token, wrong Confluence space key, database unreachable. |
 | Confluence error after a validation | A page with the same title already exists in that space. |
 | Message after the roadmap is validated gives an error | Expected for now: nothing is routed after `roadmap_validated` yet. |
-| Roadmap step fails right after the personas are validated | The personas workflow calls the roadmap workflow in *propose* mode, which is not supported yet by the roadmap workflow (see known limitations). Disconnect that call, then ask for the roadmap yourself. |
+| No question about the roadmap after the personas are validated | The personas workflow must call the roadmap workflow with `mode = propose` and the `channel_id` (done by its *Edit Fields* node). The roadmap workflow then sends an automatic `[SYSTEM_EVENT]` message and the agent only asks whether to start (no roadmap is generated). |
 | Orchestrator stops silently on a new channel | Check that **Always Output Data** is ON for the project lookup node (*Execute a SQL query*). With zero rows and the option off, n8n stops the workflow without any output. |
 
 ## Evaluation
@@ -147,7 +147,7 @@ Agents were evaluated with n8n's Evaluation nodes, with datasets in `evals/`.
 - The database and the Confluence page are written in parallel: if Confluence fails after the database insert, the data is saved but the user gets an error.
 - Nothing prevents a second roadmap for the same project.
 - Nothing is routed after `roadmap_validated`: a new message ends in the generic error.
-- The personas workflow calls the roadmap workflow in *propose* mode at the end, but the roadmap workflow does not handle that mode yet (no project context loaded, empty user message). Disconnect that call or finish the wiring.
+- In *propose* mode the roadmap workflow loads neither the project context nor the history, so the question is written in French unless the caller sends a `last_message` field (the last Product Owner message, used only to detect the language). The personas workflow does not send it yet: add it in its *Edit Fields* node for English-speaking projects.
 - Each message at the roadmap step regenerates the whole roadmap (about 2 minutes, 0.3 to 0.6 USD).
 - No per-channel lock: two different messages sent a second apart in the same channel run in parallel.
 - Confluence page labels for the roadmap are fixed in French.
