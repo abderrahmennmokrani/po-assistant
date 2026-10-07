@@ -40,7 +40,7 @@
           "conditions": [
             {
               "id": "b49d8c03-dda7-420b-9a4e-2225c460f4dc",
-              "leftValue": "={{ $json.type === 'message' && !$json.bot_id && (!$json.subtype || ($json.subtype === 'channel_join' && $json.user === 'YOUR_BOT_USER_ID')) }}",
+              "leftValue": "={{ $('Slack Trigger').first().json.type === 'message'\n&& !$('Slack Trigger').first().json.bot_id\n&& (!$('Slack Trigger').first().json.subtype\n    || ($('Slack Trigger').first().json.subtype === 'channel_join'\n        && $('Slack Trigger').first().json.user === 'YOUR_BOT_USER_ID'))\n&& !!$json.event_key }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
@@ -56,7 +56,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1360,
+        -1136,
         -1360
       ],
       "id": "f10df906-fee7-4e3b-978a-bd3f8c0880bc",
@@ -93,8 +93,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -848,
-        -1488
+        -656,
+        -1616
       ],
       "id": "5ef61593-9d47-436c-8a78-71f6d2ecac20",
       "name": "If",
@@ -106,14 +106,14 @@
         "operation": "executeQuery",
         "query": "SELECT \n  channel_id,\n  id,\n  status\nfrom projects\nWHERE  $1 = channel_id",
         "options": {
-          "queryReplacement": "='{{ $json.channel }}'"
+          "queryReplacement": "='{{ $('Slack Trigger').item.json.channel }}'"
         }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -1040,
-        -1360
+        -848,
+        -1376
       ],
       "id": "2cd231e2-685c-441a-bfed-edf9c1940ad2",
       "name": "Execute a SQL query",
@@ -183,8 +183,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -624,
-        -1648
+        -80,
+        -1840
       ],
       "name": "Sub workflow - PO Assistant - 01 Elevator Pitch",
       "id": "33d5a516-c066-4668-b9fd-4cb78eb89e80",
@@ -202,7 +202,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -432,
+        16,
         -1040
       ],
       "id": "73fe018d-d0f2-4f9d-95a0-861eaf71b927",
@@ -226,7 +226,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -176,
+        272,
         -1120
       ],
       "id": "a72634cd-8eef-47c0-a8b1-c9a8a573c98f",
@@ -251,8 +251,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -400,
-        -1248
+        96,
+        -1232
       ],
       "id": "befabbd8-ccd0-40e1-8350-9f66350d10cc",
       "name": "Edit Fields",
@@ -280,7 +280,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        0,
+        448,
         -1312
       ],
       "id": "b6e2ffc8-35ca-489b-952f-e73c99a27c1a",
@@ -314,7 +314,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "redirect for personnas and roles sub-workflow"
+              "outputKey": "personnas and roles sub-workflow"
             },
             {
               "conditions": {
@@ -339,7 +339,7 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "redirect for user stories  sub-workflow"
+              "outputKey": "road-map  sub-workflow"
             }
           ]
         },
@@ -350,12 +350,13 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -608,
-        -1488
+        -320,
+        -1680
       ],
       "id": "306f08cb-2b5a-453a-8a43-cd25841aa1d2",
       "name": "redirector",
       "retryOnFail": true,
+      "alwaysOutputData": false,
       "onError": "continueErrorOutput"
     },
     {
@@ -372,7 +373,7 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        336,
+        784,
         -800
       ],
       "id": "0a045af7-90d2-4f17-b8a9-3c888304361b",
@@ -393,7 +394,7 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        336,
+        784,
         -496
       ],
       "id": "5327bf09-5794-43e4-b248-d73d074b2f39",
@@ -404,7 +405,7 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "={{ $json.channel }}",
+          "value": "={{ $('Slack Trigger').item.json.channel }}",
           "mode": "id"
         },
         "text": "=👀 Message received, processing…",
@@ -413,8 +414,8 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -1200,
-        -1648
+        -912,
+        -1584
       ],
       "id": "23dc9340-4261-489d-9613-504c26bd1c02",
       "name": "Received message",
@@ -429,6 +430,125 @@
     },
     {
       "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "893dc50d-e32b-4153-ac4d-27748b9448bb",
+              "name": "user_Input",
+              "value": "={{ $('Slack Trigger').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "99c1f46b-a916-46ab-ada4-2ea722c933ad",
+              "name": "channel_id",
+              "value": "={{ $('Execute a SQL query').item.json.channel_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        80,
+        -1648
+      ],
+      "id": "f9f7a14f-14ca-417d-a88d-9f9c01156282",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_SUBWORKFLOW_ID",
+          "mode": "id",
+          "cachedResultName": "Sub workflow - PO Assistant - 03 Road-map creation"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        -1776
+      ],
+      "id": "d1b72757-f75e-481e-9075-4810b593b8b2",
+      "name": "Call 'Sub workflow - PO Assistant - 03 Road-map creation'"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO processed_events (event_key)\nVALUES ($1)\nON CONFLICT (event_key) DO NOTHING\nRETURNING event_key;",
+        "options": {
+          "queryReplacement": "=={{ [ $json.channel + ':' + $json.ts ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1408,
+        -1360
+      ],
+      "id": "2aa410ac-919f-4c20-927e-b112fb6c8b43",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1632,
+        -976
+      ],
+      "id": "3bea83f2-c7d0-4956-932f-7cf3be188143",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM processed_events\nWHERE created_at < now() - interval '1 hour';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -1408,
+        -976
+      ],
+      "id": "ec7c50b3-4310-4e8b-b953-804810ff4b76",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "content": "## PO Assistant - Orchestrator\nSingle entry point: every Slack message of a project channel lands here.\nOne channel = one project. The project status stored in Postgres decides which step handles the message.",
         "height": 170,
         "width": 420,
@@ -437,7 +557,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -1700,
-        -1900
+        -2100
       ],
       "typeVersion": 1,
       "id": "note-note-overview",
@@ -445,15 +565,15 @@
     },
     {
       "parameters": {
-        "content": "## Entry and filtering\nSlack Trigger, then bot messages and message edits/deletions are ignored (avoids loops). Valid messages get an instant \"Message received\" reply while the project is looked up in Postgres by channel_id.",
-        "height": 150,
-        "width": 420,
+        "content": "## Entry, deduplication and filtering\nSlack Trigger, then an INSERT ... ON CONFLICT DO NOTHING on processed_events (key = channel:ts). A Slack retry of the same event inserts nothing and stops at the check. Bot messages and message edits/deletions are ignored (avoids loops). Valid messages get an instant \"Message received\" reply while the project is looked up in Postgres by channel_id.",
+        "height": 200,
+        "width": 520,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -1700,
-        -1740
+        -1600
       ],
       "typeVersion": 1,
       "id": "note-note-entry",
@@ -461,19 +581,35 @@
     },
     {
       "parameters": {
-        "content": "## Routing\nNo project yet: Elevator Pitch sub-workflow (it hands over to Personas and roles once the pitch is published).\nStatus pitch_validated: Personas and roles sub-workflow (pitch loaded from Postgres and merged with the Slack message).\nStatus personas_and_roles_validated: next step not built yet (message ignored).\nAny other status: error branch.",
-        "height": 200,
+        "content": "## Routing\nNo project yet: Elevator Pitch sub-workflow (it hands over to Personas and roles once the pitch is published).\nStatus pitch_validated: Personas and roles sub-workflow (pitch loaded from Postgres and merged with the Slack message).\nStatus personas_and_roles_validated: Roadmap sub-workflow.\nAny other status (including roadmap_validated, next step not built yet): error branch.",
+        "height": 210,
         "width": 470,
         "color": 6
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -560,
-        -1900
+        -2060
       ],
       "typeVersion": 1,
       "id": "note-note-routing",
       "name": "Note - Routing"
+    },
+    {
+      "parameters": {
+        "content": "## Purge\nHourly schedule: deletes processed_events rows older than 1 hour (Slack retries stop after about 5 minutes).",
+        "height": 120,
+        "width": 420,
+        "color": "#226D1C"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1700,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "note-note-purge",
+      "name": "Note - Purge"
     },
     {
       "parameters": {
@@ -484,8 +620,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        440,
-        -1000
+        1100,
+        -800
       ],
       "typeVersion": 1,
       "id": "note-note-error-handling",
@@ -498,7 +634,7 @@
       "main": [
         [
           {
-            "node": "Check for bot message",
+            "node": "Execute a SQL query2",
             "type": "main",
             "index": 0
           }
@@ -694,7 +830,13 @@
             "index": 0
           }
         ],
-        [],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Error message to user",
@@ -703,6 +845,39 @@
           },
           {
             "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Call 'Sub workflow - PO Assistant - 03 Road-map creation'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Check for bot message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
             "type": "main",
             "index": 0
           }

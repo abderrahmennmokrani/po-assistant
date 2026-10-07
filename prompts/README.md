@@ -25,6 +25,16 @@ Lines such as `{{ $('When Executed by Another Workflow').item.json.elevator_pitc
 | `02-personas-roles/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent | Options > System Message | Claude Haiku 4.5 |
 | `02-personas-roles/04_parsing_agent_system_message.txt` | Parsing agent | Options > System Message | Claude Haiku 4.5 |
 
+## 03 - Roadmap (`workflows/po-assistant-03-roadmap.json`)
+
+| File | Node | Field | Model |
+|------|------|-------|-------|
+| `03-roadmap/01_roadmap_system_message_v14.txt` | Build the messages (Code node) | `TEMPLATE` constant; `{{ ... }}` placeholders are replaced by the node (`@@PITCH@@`, `@@PERSONAS@@`, `@@ROLES@@`) | Claude Opus 5.5 (HTTP Request, `effort: medium`, `max_tokens: 64000`) |
+| `03-roadmap/02_guardrail_custom_prompt.txt` | Guardrails | Custom guardrail > Prompt (threshold 0.7) | Claude Haiku 4.5 |
+| `03-roadmap/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent | Options > System Message | Claude Haiku 4.5 |
+
+The roadmap has no parsing agent: the validated text is parsed by the *Parse the validated roadmap* Code node.
+
 ## How the agents are fed
 
 - Agents receive the user message through the `guardrailsInput` field produced by the Guardrails node.

@@ -1,6 +1,6 @@
--- PO Assistant: Postgres schema (steps 1 and 2)
+-- PO Assistant: Postgres schema (steps 1 to 3 + event deduplication)
 -- One channel = one project. channel_id is the Slack channel ID.
--- status moves forward: pitch_validated, then personas_and_roles_validated.
+-- status moves forward: pitch_validated, personas_and_roles_validated, roadmap_validated.
 
 CREATE TABLE IF NOT EXISTS projects (
     id                    SERIAL PRIMARY KEY,
@@ -24,5 +24,40 @@ CREATE TABLE IF NOT EXISTS roles (
     roles       JSONB
 );
 
+-- Validated roadmap: one row for the vision / objective / journey / assumptions,
+-- one row per epic. Deleting a roadmap deletes its epics.
+CREATE TABLE IF NOT EXISTS roadmaps (
+    id          SERIAL PRIMARY KEY,
+    project_id  INTEGER NOT NULL REFERENCES projects(id),
+    vision      TEXT NOT NULL,
+    objective   TEXT NOT NULL,
+    journey     TEXT,
+    assumptions TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS epics (
+    id          SERIAL PRIMARY KEY,
+    roadmap_id  INTEGER NOT NULL REFERENCES roadmaps(id) ON DELETE CASCADE,
+    position    INTEGER NOT NULL,
+    title       TEXT NOT NULL,
+    horizon     TEXT NOT NULL CHECK (horizon IN ('Now', 'Next', 'Later')),
+    description TEXT NOT NULL,
+    how         TEXT,                                -- short sentence when the epic has only one or two features
+    features    JSONB NOT NULL DEFAULT '[]',         -- [{ "name": ..., "description": ... }]
+    rules       JSONB NOT NULL DEFAULT '[]',         -- [ "...", ... ], empty for Later epics
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (roadmap_id, position)
+);
+
+-- Slack event deduplication (Slack retries an event if it is not acknowledged fast enough).
+-- The orchestrator inserts "channel:ts"; a conflict means the event was already handled.
+-- An hourly schedule in the orchestrator deletes rows older than one hour.
+CREATE TABLE IF NOT EXISTS processed_events (
+    event_key   TEXT PRIMARY KEY,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- The chat memory table (default name n8n_chat_histories, session_id = Slack channel ID)
--- is created and managed by n8n's Postgres Chat Memory node.
+-- is created and managed by n8n's Postgres Chat Memory node. The roadmap workflow also
+-- reads and writes it directly with SQL.
