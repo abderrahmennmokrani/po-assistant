@@ -695,6 +695,12 @@
               "name": "mode",
               "value": "propose",
               "type": "string"
+            },
+            {
+              "id": "1c299d11-8e62-44a9-9692-c3a17cad33eb",
+              "name": "last_message",
+              "value": "={{ $('When Executed by Another Workflow').first().json.user_Input }}",
+              "type": "string"
             }
           ]
         },

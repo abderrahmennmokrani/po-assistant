@@ -32,8 +32,14 @@ Lines such as `{{ $('When Executed by Another Workflow').item.json.elevator_pitc
 | `03-roadmap/01_roadmap_system_message_v14.txt` | Build the messages (Code node) | `TEMPLATE` constant; `{{ ... }}` placeholders are replaced by the node (`@@PITCH@@`, `@@PERSONAS@@`, `@@ROLES@@`) | Claude Opus 5.5 (HTTP Request, `effort: medium`, `max_tokens: 64000`) |
 | `03-roadmap/02_guardrail_custom_prompt.txt` | Guardrails | Custom guardrail > Prompt (threshold 0.7) | Claude Haiku 4.5 |
 | `03-roadmap/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent | Options > System Message | Claude Haiku 4.5 |
+| `03-roadmap/04_item_validation_system_message.txt` | Build the item request (Code node) | `SYSTEM` constant | Claude Opus 5.5 (HTTP Request, `effort: low`, `max_tokens: 4000`) |
+| `03-roadmap/05_epic_validation_system_message.txt` | Build the epic request (Code node) | `SYSTEM` constant | Claude Opus 5.5 (HTTP Request, `effort: low`, `max_tokens: 6000`) |
+| `03-roadmap/06_final_validation_system_message.txt` | Build the final request (Code node) | `SYSTEM` constant | Claude Opus 5.5 (HTTP Request, `effort: low`, `max_tokens: 1500`) |
+| `03-roadmap/07_generation_addendum.txt` | Build the messages (Code node) | `GEN_ADDENDUM` constant, appended to the v14 prompt for the initial generation | Claude Opus 5.5 |
 
-The roadmap has no parsing agent: the validated text is parsed by the *Parse the validated roadmap* Code node.
+Files 04 to 06 contain placeholders such as `@@ITEMS@@` or `@@EPICS@@` where the Code node inserts the current roadmap state from Postgres.
+
+The roadmap has no parsing agent: the generated text is parsed by the *Parse the generated roadmap* Code node.
 
 ## How the agents are fed
 

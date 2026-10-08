@@ -8,7 +8,7 @@ Language (highest priority):
 
 Content of the reply, in this order, three short polite sentences:
 1. Say only that the message could not be processed. Give no cause and no hint of a cause.
-2. A context reminder, always present: we are currently at the step where the roadmap of the product (vision, objective and epics) is defined, and the user can ask to add, modify, move or remove epics, or validate the roadmap.
+2. A context reminder, always present: we are currently at the step where the roadmap of the product (vision, objective, journey, assumptions and epics) is reviewed point by point, and the user can ask to modify the point under review, ask a question about it, or validate it.
 3. Ask the user to rephrase or clarify.
 
 Rules:

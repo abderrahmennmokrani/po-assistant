@@ -24,16 +24,26 @@ CREATE TABLE IF NOT EXISTS roles (
     roles       JSONB
 );
 
--- Validated roadmap: one row for the vision / objective / journey / assumptions,
+-- Roadmap: one row (unique per project) for the vision / objective / journey / assumptions,
 -- one row per epic. Deleting a roadmap deletes its epics.
+-- The roadmap is generated once, then validated point by point: each of the four items and
+-- each epic has a status ('created' until the Product Owner validates it, then 'validated').
+-- 'labels' keeps the exact wording of the labels in the language of the roadmap
+-- (e.g. "Objectif : ") so items and epics can be shown again without calling the model.
 CREATE TABLE IF NOT EXISTS roadmaps (
-    id          SERIAL PRIMARY KEY,
-    project_id  INTEGER NOT NULL REFERENCES projects(id),
-    vision      TEXT NOT NULL,
-    objective   TEXT NOT NULL,
-    journey     TEXT,
-    assumptions TEXT,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    id                 SERIAL PRIMARY KEY,
+    project_id         INTEGER NOT NULL REFERENCES projects(id),
+    vision             TEXT NOT NULL,
+    objective          TEXT NOT NULL,
+    journey            TEXT,
+    assumptions        TEXT,
+    vision_status      TEXT NOT NULL DEFAULT 'created' CHECK (vision_status      IN ('created','validated')),
+    objective_status   TEXT NOT NULL DEFAULT 'created' CHECK (objective_status   IN ('created','validated')),
+    journey_status     TEXT NOT NULL DEFAULT 'created' CHECK (journey_status     IN ('created','validated')),
+    assumptions_status TEXT NOT NULL DEFAULT 'created' CHECK (assumptions_status IN ('created','validated')),
+    labels             JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (project_id)
 );
 
 CREATE TABLE IF NOT EXISTS epics (
@@ -46,6 +56,7 @@ CREATE TABLE IF NOT EXISTS epics (
     how         TEXT,                                -- short sentence when the epic has only one or two features
     features    JSONB NOT NULL DEFAULT '[]',         -- [{ "name": ..., "description": ... }]
     rules       JSONB NOT NULL DEFAULT '[]',         -- [ "...", ... ], empty for Later epics
+    status      TEXT NOT NULL DEFAULT 'created' CHECK (status IN ('created','validated')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (roadmap_id, position)
 );
