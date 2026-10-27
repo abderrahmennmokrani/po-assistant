@@ -1,5 +1,5 @@
 {
-  "name": "erreur notification",
+  "name": "PO Assistant - Erreur Notification",
   "nodes": [
     {
       "parameters": {},
@@ -18,7 +18,7 @@
         "sendTo": "YOUR_EMAIL@example.com",
         "subject": "Error notification ",
         "emailType": "text",
-        "message": "=an error is detected here are the details : \n\nWorkflow Name : {{ $json.workflow.name }}\nWorkflow URL : {{ $json.execution.url }}",
+        "message": "=an error is detected here are the details : \n\nWorkflow Name : {{ $json.workflow.name }}\nWorkflow URL : {{ $json.execution.url }}\nError message : {{ $json.execution.error.stack }}",
         "options": {}
       },
       "type": "n8n-nodes-base.gmail",

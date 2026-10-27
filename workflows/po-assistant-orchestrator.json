@@ -13,20 +13,21 @@
       "type": "n8n-nodes-base.slackTrigger",
       "typeVersion": 1,
       "position": [
-        -1632,
-        -1360
+        -1808,
+        -848
       ],
       "id": "325fef42-4df7-49da-ab39-0472a4a29d7b",
       "name": "Slack Trigger",
       "alwaysOutputData": false,
-      "retryOnFail": false,
+      "retryOnFail": true,
       "notesInFlow": true,
       "credentials": {
         "slackApi": {
           "id": "YOUR_CREDENTIAL_ID",
           "name": "Slack account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -56,8 +57,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1136,
-        -1360
+        -1184,
+        -1024
       ],
       "id": "f10df906-fee7-4e3b-978a-bd3f8c0880bc",
       "name": "Check for bot message",
@@ -93,8 +94,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -656,
-        -1616
+        -736,
+        -1232
       ],
       "id": "5ef61593-9d47-436c-8a78-71f6d2ecac20",
       "name": "If",
@@ -112,8 +113,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -848,
-        -1376
+        -960,
+        -1104
       ],
       "id": "2cd231e2-685c-441a-bfed-edf9c1940ad2",
       "name": "Execute a SQL query",
@@ -183,8 +184,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -80,
-        -1840
+        -512,
+        -2128
       ],
       "name": "Sub workflow - PO Assistant - 01 Elevator Pitch",
       "id": "33d5a516-c066-4668-b9fd-4cb78eb89e80",
@@ -202,8 +203,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        16,
-        -1040
+        -288,
+        -1648
       ],
       "id": "73fe018d-d0f2-4f9d-95a0-861eaf71b927",
       "name": "Execute a SQL query1",
@@ -226,8 +227,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        272,
-        -1120
+        -64,
+        -1792
       ],
       "id": "a72634cd-8eef-47c0-a8b1-c9a8a573c98f",
       "name": "Merge",
@@ -251,8 +252,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        96,
-        -1232
+        -288,
+        -1936
       ],
       "id": "befabbd8-ccd0-40e1-8350-9f66350d10cc",
       "name": "Edit Fields",
@@ -280,8 +281,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        448,
-        -1312
+        160,
+        -1888
       ],
       "id": "b6e2ffc8-35ca-489b-952f-e73c99a27c1a",
       "name": "Call 'PO Assistant - 02 Personna creation'",
@@ -340,6 +341,56 @@
               },
               "renameOutput": true,
               "outputKey": "road-map  sub-workflow"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "25b7f412-bfdd-4c43-a326-ab9f5b1fbef2",
+                    "leftValue": "={{ $('Execute a SQL query').item.json.status }}",
+                    "rightValue": "road_map_validated",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "epics sub-workflow"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "612f66a5-85c2-407b-adba-ee4fc0541424",
+                    "leftValue": "={{ $('Execute a SQL query').item.json.status }}",
+                    "rightValue": "epics_completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "features sub-workflow"
             }
           ]
         },
@@ -350,8 +401,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -320,
-        -1680
+        -512,
+        -1408
       ],
       "id": "306f08cb-2b5a-453a-8a43-cd25841aa1d2",
       "name": "redirector",
@@ -367,55 +418,14 @@
           "value": "={{ $('Slack Trigger').item.json.channel }}",
           "mode": "id"
         },
-        "text": "=An unexpected error occurred \nThe workflow admin is notified \nPlease try again later",
-        "otherOptions": {}
-      },
-      "type": "n8n-nodes-base.slack",
-      "typeVersion": 2.7,
-      "position": [
-        784,
-        -800
-      ],
-      "id": "0a045af7-90d2-4f17-b8a9-3c888304361b",
-      "name": "Error message to user",
-      "alwaysOutputData": false,
-      "retryOnFail": true,
-      "credentials": {
-        "slackApi": {
-          "id": "YOUR_CREDENTIAL_ID",
-          "name": "Slack account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "errorMessage": "An error occured"
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        784,
-        -496
-      ],
-      "id": "5327bf09-5794-43e4-b248-d73d074b2f39",
-      "name": "Stop and Error"
-    },
-    {
-      "parameters": {
-        "select": "channel",
-        "channelId": {
-          "__rl": true,
-          "value": "={{ $('Slack Trigger').item.json.channel }}",
-          "mode": "id"
-        },
         "text": "=👀 Message received, processing…",
         "otherOptions": {}
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -912,
-        -1584
+        -960,
+        -1424
       ],
       "id": "23dc9340-4261-489d-9613-504c26bd1c02",
       "name": "Received message",
@@ -426,7 +436,8 @@
           "id": "YOUR_CREDENTIAL_ID",
           "name": "Slack account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -451,38 +462,13 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        80,
-        -1648
+        -288,
+        -1312
       ],
       "id": "f9f7a14f-14ca-417d-a88d-9f9c01156282",
-      "name": "Edit Fields1"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "copy Sub workflow - PO Assistant - 03 Road-map creation"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        304,
-        -1776
-      ],
-      "id": "d1b72757-f75e-481e-9075-4810b593b8b2",
-      "name": "Call 'copy Sub workflow - PO Assistant - 03 Road-map creation'"
+      "name": "Edit Fields1",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -496,16 +482,18 @@
       "typeVersion": 2.7,
       "position": [
         -1408,
-        -1360
+        -912
       ],
       "id": "2aa410ac-919f-4c20-927e-b112fb6c8b43",
       "name": "Execute a SQL query2",
+      "retryOnFail": true,
       "credentials": {
         "postgres": {
           "id": "YOUR_CREDENTIAL_ID",
           "name": "Postgres account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -521,10 +509,12 @@
       "typeVersion": 1.4,
       "position": [
         -1632,
-        -976
+        -224
       ],
       "id": "3bea83f2-c7d0-4956-932f-7cf3be188143",
-      "name": "Schedule Trigger"
+      "name": "Schedule Trigger",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -536,96 +526,427 @@
       "typeVersion": 2.7,
       "position": [
         -1408,
-        -976
+        -480
       ],
       "id": "ec7c50b3-4310-4e8b-b953-804810ff4b76",
       "name": "Execute a SQL query3",
+      "retryOnFail": true,
       "credentials": {
         "postgres": {
           "id": "YOUR_CREDENTIAL_ID",
           "name": "Postgres account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "content": "## PO Assistant - Orchestrator\nSingle entry point: every Slack message of a project channel lands here.\nOne channel = one project. The project status stored in Postgres decides which step handles the message.",
-        "height": 170,
-        "width": 420,
-        "color": "#F7F7F7"
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_SUBWORKFLOW_ID",
+          "mode": "id",
+          "cachedResultName": "Sub workflow - PO Assistant - 03 Road-map creation"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.stickyNote",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
       "position": [
-        -1700,
-        -2100
+        -64,
+        -1408
       ],
-      "typeVersion": 1,
-      "id": "note-note-overview",
-      "name": "Note - Overview"
+      "id": "d1b72757-f75e-481e-9075-4810b593b8b2",
+      "name": "Call 'Sub workflow - PO Assistant - 03 Road-map creation'",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "content": "## Entry, deduplication and filtering\nSlack Trigger, then an INSERT ... ON CONFLICT DO NOTHING on processed_events (key = channel:ts). A Slack retry of the same event inserts nothing and stops at the check. Bot messages and message edits/deletions are ignored (avoids loops). Valid messages get an instant \"Message received\" reply while the project is looked up in Postgres by channel_id.",
-        "height": 200,
-        "width": 520,
-        "color": 5
+        "assignments": {
+          "assignments": [
+            {
+              "id": "893dc50d-e32b-4153-ac4d-27748b9448bb",
+              "name": "user_Input",
+              "value": "={{ $('Slack Trigger').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "99c1f46b-a916-46ab-ada4-2ea722c933ad",
+              "name": "channel_id",
+              "value": "={{ $('Execute a SQL query').item.json.channel_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.stickyNote",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
       "position": [
-        -1700,
-        -1600
+        -288,
+        -928
       ],
-      "typeVersion": 1,
-      "id": "note-note-entry",
-      "name": "Note - Entry"
+      "id": "19c558f0-89a1-44d3-8117-0453c24ec8c6",
+      "name": "Edit Fields2",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "content": "## Routing\nNo project yet: Elevator Pitch sub-workflow (it hands over to Personas and roles once the pitch is published).\nStatus pitch_validated: Personas and roles sub-workflow (pitch loaded from Postgres and merged with the Slack message).\nStatus personas_and_roles_validated: Roadmap sub-workflow.\nAny other status (including roadmap_validated, next step not built yet): error branch.",
-        "height": 210,
-        "width": 470,
-        "color": 6
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_SUBWORKFLOW_ID",
+          "mode": "id",
+          "cachedResultName": "Sub workflow - PO Assistant - 04 Epic creation"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.stickyNote",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
       "position": [
-        -560,
-        -2060
+        -64,
+        -1024
       ],
-      "typeVersion": 1,
-      "id": "note-note-routing",
-      "name": "Note - Routing"
+      "id": "5a06269d-37d9-45aa-9b18-d10f7c513d66",
+      "name": "Call 'Sub workflow - PO Assistant - 04 Epics creation",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "content": "## Purge\nHourly schedule: deletes processed_events rows older than 1 hour (Slack retries stop after about 5 minutes).",
-        "height": 120,
-        "width": 420,
-        "color": "#226D1C"
+        "assignments": {
+          "assignments": [
+            {
+              "id": "893dc50d-e32b-4153-ac4d-27748b9448bb",
+              "name": "user_Input",
+              "value": "={{ $('Slack Trigger').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "99c1f46b-a916-46ab-ada4-2ea722c933ad",
+              "name": "channel_id",
+              "value": "={{ $('Execute a SQL query').item.json.channel_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.stickyNote",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
       "position": [
-        -1700,
-        -1200
+        -288,
+        -544
       ],
-      "typeVersion": 1,
-      "id": "note-note-purge",
-      "name": "Note - Purge"
+      "id": "c8cbb365-6d18-41a9-928a-04afee8490fc",
+      "name": "Edit Fields3",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "content": "## Error handling\nEvery node retries on failure. After the last retry the user is notified in Slack, then Stop and Error marks the execution as failed so the global Error Workflow alerts the admin.",
-        "height": 180,
-        "width": 420,
-        "color": "#11E4C1"
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_SUBWORKFLOW_ID",
+          "mode": "id",
+          "cachedResultName": "Sub workflow - PO Assistant - 05 feature creation"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.stickyNote",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
       "position": [
-        1100,
+        -64,
+        -640
+      ],
+      "id": "0fd1d9f8-9b28-4896-a75e-afd5ba462c92",
+      "name": "Call 'Sub workflow - PO Assistant - 05 Feature creation",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1184,
         -800
       ],
+      "id": "c3650587-23e3-4c59-a4e7-a990d75f534a",
+      "name": "Stop and Error1"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
-      "id": "note-note-error-handling",
-      "name": "Note - Error handling"
+      "position": [
+        -960,
+        -912
+      ],
+      "id": "08a4c568-cc30-4247-9b2f-68b4217c44ff",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -1424
+      ],
+      "id": "ba647f57-f4f8-4e06-a655-a927dbbd955e",
+      "name": "Stop and Error2"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -1008
+      ],
+      "id": "0a4b73b2-ee0f-44fb-9314-93979219c662",
+      "name": "Stop and Error3"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        -1088
+      ],
+      "id": "72ee7f07-7a2b-4b05-a04b-f5ea78a155be",
+      "name": "Stop and Error4"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -736
+      ],
+      "id": "4d925691-678e-43a1-9e6e-8ad2a0fe7e39",
+      "name": "Stop and Error5"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -2096
+      ],
+      "id": "7998b5d3-0d70-4c60-ba9f-b238adfdaf12",
+      "name": "Stop and Error6"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -448
+      ],
+      "id": "2c8201f4-8121-4fd8-b73b-b87e11c33eeb",
+      "name": "Stop and Error7"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -832
+      ],
+      "id": "b373fef6-9441-4449-9dc1-5d198476a5b6",
+      "name": "Stop and Error8"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -1216
+      ],
+      "id": "4010472b-d72c-408f-9a39-7ff0af51bd8d",
+      "name": "Stop and Error9"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -1408
+      ],
+      "id": "b6ab86de-3ad3-42f7-8c84-539b0f444a63",
+      "name": "Stop and Error10"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -1024
+      ],
+      "id": "9d24ce2b-532e-447f-ab5e-365db5554712",
+      "name": "Stop and Error11"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -640
+      ],
+      "id": "a18a98fd-9d41-4604-946a-4965460687a4",
+      "name": "Stop and Error12"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -1600
+      ],
+      "id": "e7d72094-3f1c-4d95-8371-59ff343f792c",
+      "name": "Stop and Error13"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -1984
+      ],
+      "id": "2d6fcf6c-99d8-4fc9-a43a-092a9effdadd",
+      "name": "Stop and Error14"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -1696
+      ],
+      "id": "385ee1ca-3be3-4b96-9c30-02d763e0dabd",
+      "name": "Stop and Error15"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -1888
+      ],
+      "id": "2aa38683-386d-4402-b631-fa265dbd72f0",
+      "name": "Stop and Error16"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        -416
+      ],
+      "id": "fe0f2a82-fa57-4248-a168-e9b7dcf2f817",
+      "name": "Stop and Error17"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        -208
+      ],
+      "id": "4ca4ffc5-2a7f-4c0f-bd32-c1771c2fe624",
+      "name": "Stop and Error18"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        -768
+      ],
+      "id": "d4e24207-dd66-43ec-9db0-3d8bf81c97d5",
+      "name": "Stop and Error19"
     }
   ],
   "pinData": {},
@@ -639,7 +960,13 @@
             "index": 0
           }
         ],
-        []
+        [
+          {
+            "node": "Stop and Error19",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Check for bot message": {
@@ -657,7 +984,13 @@
           }
         ],
         [],
-        []
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "If": {
@@ -678,12 +1011,7 @@
         ],
         [
           {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
+            "node": "Stop and Error4",
             "type": "main",
             "index": 0
           }
@@ -701,12 +1029,7 @@
         ],
         [
           {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
+            "node": "Stop and Error3",
             "type": "main",
             "index": 0
           }
@@ -718,12 +1041,7 @@
         [],
         [
           {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
+            "node": "Stop and Error6",
             "type": "main",
             "index": 0
           }
@@ -741,12 +1059,7 @@
         ],
         [
           {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
+            "node": "Stop and Error13",
             "type": "main",
             "index": 0
           }
@@ -764,12 +1077,7 @@
         ],
         [
           {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
+            "node": "Stop and Error15",
             "type": "main",
             "index": 0
           }
@@ -787,12 +1095,7 @@
         ],
         [
           {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
+            "node": "Stop and Error14",
             "type": "main",
             "index": 0
           }
@@ -804,12 +1107,7 @@
         [],
         [
           {
-            "node": "Error message to user",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Stop and Error",
+            "node": "Stop and Error16",
             "type": "main",
             "index": 0
           }
@@ -839,12 +1137,22 @@
         ],
         [
           {
-            "node": "Error message to user",
+            "node": "Edit Fields2",
             "type": "main",
             "index": 0
-          },
+          }
+        ],
+        [
           {
-            "node": "Stop and Error",
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Stop and Error5",
             "type": "main",
             "index": 0
           }
@@ -855,7 +1163,14 @@
       "main": [
         [
           {
-            "node": "Call 'copy Sub workflow - PO Assistant - 03 Road-map creation'",
+            "node": "Call 'Sub workflow - PO Assistant - 03 Road-map creation'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error9",
             "type": "main",
             "index": 0
           }
@@ -870,6 +1185,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Stop and Error1",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -878,6 +1200,109 @@
         [
           {
             "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error18",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Call 'Sub workflow - PO Assistant - 04 Epics creation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Call 'Sub workflow - PO Assistant - 05 Feature creation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Received message": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Sub workflow - PO Assistant - 03 Road-map creation'": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Sub workflow - PO Assistant - 04 Epics creation": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Sub workflow - PO Assistant - 05 Feature creation": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error17",
             "type": "main",
             "index": 0
           }
@@ -892,7 +1317,8 @@
     "timeSavedMode": "fixed",
     "saveExecutionProgress": true,
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "executionTimeout": 900
   },
   "nodeGroups": [],
   "tags": []
