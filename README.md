@@ -169,6 +169,11 @@ Abderrahmen Mokrani, Senior Product Owner.
 
 ## Changelog
 
+### v1.1.1 (2026-10-27)
+- Refusal messages of steps 03, 04 and 05 now use the refusal prompt instead of the detection prompt.
+- Workflow 05: if the first answer is a refusal ("non", "plus tard"), the assistant waits instead of presenting the first feature.
+- Workflow 04: chat memory is now one conversation per epic.
+
 ### v1.1 (2026-10-27)
 - Workflow 03 reworked: one generation of the vision, objective, journey, assumptions and a brief epic list, negotiated freely and validated once; epics saved as drafts with a priority inside their horizon.
 - Added workflow 04: the Now epics are developed one at a time (description, business rules, building blocks with priority, success measures) and validated by the PO; status `epics_completed`.

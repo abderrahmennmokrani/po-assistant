@@ -105,7 +105,7 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.channel_id }}-roadmap"
+        "sessionKey": "=={{ $('When Executed by Another Workflow').item.json.channel_id }}-epic-{{ $('Get focus epic').first().json.focus_epic_id ?? 'done' }}"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.4,
