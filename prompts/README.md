@@ -29,17 +29,30 @@ Lines such as `{{ $('When Executed by Another Workflow').item.json.elevator_pitc
 
 | File | Node | Field | Model |
 |------|------|-------|-------|
-| `03-roadmap/01_roadmap_system_message_v14.txt` | Build the messages (Code node) | `TEMPLATE` constant; `{{ ... }}` placeholders are replaced by the node (`@@PITCH@@`, `@@PERSONAS@@`, `@@ROLES@@`) | Claude Opus 5.5 (HTTP Request, `effort: medium`, `max_tokens: 64000`) |
+| `03-roadmap/01_vision_creator_system_message.txt` | Roadmap creator | Options > System Message | Claude Opus 5.5 |
 | `03-roadmap/02_guardrail_custom_prompt.txt` | Guardrails | Custom guardrail > Prompt (threshold 0.7) | Claude Haiku 4.5 |
-| `03-roadmap/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent | Options > System Message | Claude Haiku 4.5 |
-| `03-roadmap/04_item_validation_system_message.txt` | Build the item request (Code node) | `SYSTEM` constant | Claude Opus 5.5 (HTTP Request, `effort: low`, `max_tokens: 4000`) |
-| `03-roadmap/05_epic_validation_system_message.txt` | Build the epic request (Code node) | `SYSTEM` constant | Claude Opus 5.5 (HTTP Request, `effort: low`, `max_tokens: 6000`) |
-| `03-roadmap/06_final_validation_system_message.txt` | Build the final request (Code node) | `SYSTEM` constant | Claude Opus 5.5 (HTTP Request, `effort: low`, `max_tokens: 1500`) |
-| `03-roadmap/07_generation_addendum.txt` | Build the messages (Code node) | `GEN_ADDENDUM` constant, appended to the v14 prompt for the initial generation | Claude Opus 5.5 |
+| `03-roadmap/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent1 | Options > System Message | Claude Haiku 4.5 |
+| `03-roadmap/04_parsing_agent_system_message.txt` | Parsing agent | Options > System Message | Claude Haiku 4.5 |
 
-Files 04 to 06 contain placeholders such as `@@ITEMS@@` or `@@EPICS@@` where the Code node inserts the current roadmap state from Postgres.
+## 04 - Epics (`workflows/po-assistant-04-epics.json`)
 
-The roadmap has no parsing agent: the generated text is parsed by the *Parse the generated roadmap* Code node.
+| File | Node | Field | Model |
+|------|------|-------|-------|
+| `04-epics/01_epics_creator_system_message.txt` | Epics creator | Options > System Message | Claude Opus 5.5 |
+| `04-epics/02_guardrail_custom_prompt.txt` | Guardrails | Custom guardrail > Prompt (threshold 0.7) | Claude Haiku 4.5 |
+| `04-epics/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent1 | Options > System Message | Claude Haiku 4.5 |
+| `04-epics/04_parsing_agent_system_message.txt` | Parse validated epic | Options > System Message | Claude Haiku 4.5 |
+
+## 05 - Features (`workflows/po-assistant-05-features.json`)
+
+| File | Node | Field | Model |
+|------|------|-------|-------|
+| `05-features/01_features_creator_system_message.txt` | Features creator | Options > System Message | Claude Opus 5.5 |
+| `05-features/02_guardrail_custom_prompt.txt` | Guardrails | Custom guardrail > Prompt (threshold 0.7) | Claude Haiku 4.5 |
+| `05-features/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent1 | Options > System Message | Claude Haiku 4.5 |
+| `05-features/04_parsing_agent_system_message.txt` | Parse validated feature | Options > System Message | Claude Haiku 4.5 |
+
+The creators of 03, 04 and 05 are the only prompts that use the project data in the system message (pitch, personas, roles, roadmap, focus epic or feature): they are set to **Expression** mode. The parsing agents copy the validated text into structured JSON and never rewrite it.
 
 ## How the agents are fed
 
@@ -47,4 +60,6 @@ The roadmap has no parsing agent: the generated text is parsed by the *Parse the
 - The parsing agents receive the validated output of the previous agent and return structured JSON through a Structured Output Parser.
 - Prompts are written in English; the agents answer in the language of the Product Owner (see the language rules inside the prompts).
 - The personas creator also runs in a *propose* mode, called by the pitch workflow right after the pitch is published. Its **Text** field is `{{ $json.mode === 'propose' ? '[SYSTEM_EVENT] The pitch has just been validated and published. Ask the Product Owner whether they want to start creating the personas and roles.' : $json.guardrailsInput }}`; the system message handles the `[SYSTEM_EVENT]` prefix.
-- The roadmap workflow also has a *propose* mode, called by the personas workflow once personas and roles are validated. The *Build the messages* Code node then sends the automatic message `[SYSTEM_EVENT] The personas and roles have just been validated and published. Ask the Product Owner whether they want to start creating the roadmap.` followed by either `Write in the language of this last Product Owner message: "...".` (when the caller sends `last_message`) or `Write in French.`; the roadmap system message answers with one or two sentences asking whether to start, and presents no roadmap.
+- The roadmap workflow also has a *propose* mode, called by the personas workflow once personas and roles are validated. Its **Text** field sends `[SYSTEM_EVENT] The personas and roles have just been validated and published. Ask the Product Owner whether they want to start creating the vision and the epics...` in the language of the last Product Owner message; the system message answers with one or two sentences asking whether to start, and presents no roadmap.
+- The epics and features workflows work the same way: they are called in *propose* mode (`[SYSTEM_EVENT] Develop the epic.` / `Develop the feature.`) and present the first item. Each item is its own conversation (chat memory key `<channel>-epic-<id>` and `<channel>-feature-<id>`), so the history starts empty for every epic and every feature.
+- In 03, 04 and 05 the model writes a marker as the first line of its reply (`VISION_AND_EPICS_VALIDATED`, `EPIC_VALIDATED`, `EPICS_COMPLETE`, `FEATURE_VALIDATED`, `FEATURES_COMPLETE`). The workflow routes on it; the marker is never shown to the Product Owner.
