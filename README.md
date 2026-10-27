@@ -169,6 +169,12 @@ Abderrahmen Mokrani, Senior Product Owner.
 
 ## Changelog
 
+### v1.1.2 (2026-10-27)
+- Workflows 04 and 05: when called in propose mode, the sub-workflow now runs the same context queries as a normal turn, so the first epic or feature is presented automatically.
+- Workflow 04: the closing message of the last epic is sent before the first feature is presented, and the features are inserted before the call to 05.
+- Workflow 04: the closing message of the last epic no longer asks a question.
+- Workflow 05: `If propose mode` no longer outputs an empty item, which caused a spurious run on every user message.
+
 ### v1.1.1 (2026-10-27)
 - Refusal messages of steps 03, 04 and 05 now use the refusal prompt instead of the detection prompt.
 - Workflow 05: if the first answer is a refusal ("non", "plus tard"), the assistant waits instead of presenting the first feature.

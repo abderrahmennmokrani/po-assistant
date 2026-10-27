@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.2,
       "position": [
-        -8048,
-        3152
+        -10848,
+        4624
       ],
-      "id": "f321cbb5-2d68-4f54-8680-0997399a0dfa",
+      "id": "26b58573-d144-4c2f-807b-c90d49ce6b4d",
       "name": "When Executed by Another Workflow",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -34,10 +34,10 @@
       "type": "@n8n/n8n-nodes-langchain.guardrails",
       "typeVersion": 2,
       "position": [
-        -7600,
-        3264
+        -10400,
+        4736
       ],
-      "id": "e9be38d5-4871-4b6e-81d2-ad5aa3f4b81b",
+      "id": "b9a3474c-2e1d-4d63-8822-10c1c5d4aa96",
       "name": "Guardrails",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -55,10 +55,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -7184,
-        4080
+        -9984,
+        5552
       ],
-      "id": "33e7cf19-2b99-471a-9e79-86d8da866a8c",
+      "id": "3234faad-7adc-4a2c-92cc-0ca6b2fb8df8",
       "name": "Haiku - Guardrails",
       "credentials": {
         "anthropicApi": {
@@ -94,27 +94,26 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -7824,
-        2928
+        -10624,
+        4400
       ],
-      "id": "34bff45d-caa6-4e31-8d80-1d075eaa59d1",
+      "id": "d6c5ba7d-e65b-40fe-96ab-6a024f782ba0",
       "name": "If propose mode",
-      "alwaysOutputData": true,
       "retryOnFail": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.channel_id }}-feature-{{ $('Get focus epic & focus feature').first().json.focus_feature_id ?? 'done' }}"
+        "sessionKey": "=={{ $('When Executed by Another Workflow').item.json.channel_id }}-feature-{{ $('Get focus epic & focus feature').isExecuted ? ($('Get focus epic & focus feature').first().json.focus_feature_id ?? 'done') : 'start' }}"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.4,
       "position": [
-        -6672,
-        2768
+        -9472,
+        4240
       ],
-      "id": "994eaa74-79e6-41c6-bfcd-1ebab00821a1",
+      "id": "03536d48-8f4a-4a6d-b2b4-352003d948aa",
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
@@ -138,10 +137,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -6800,
-        2768
+        -9600,
+        4240
       ],
-      "id": "de3561f6-24f7-478a-9b5e-3b2a810b94ac",
+      "id": "74213850-b6dd-41ec-a0a6-d2253f96dc14",
       "name": "Opus - Features creator",
       "credentials": {
         "anthropicApi": {
@@ -159,10 +158,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -7024,
-        2912
+        -9824,
+        4384
       ],
-      "id": "98c81f24-b5ea-4f12-9dae-2e62745838e6",
+      "id": "e7512291-f55c-442d-9bdb-0b3166cbb505",
       "name": "Merge context",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -181,10 +180,10 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -6208,
-        2816
+        -9008,
+        4288
       ],
-      "id": "59f01a1f-d07f-4905-b5ac-be258180f87b",
+      "id": "287c159f-ee8b-46dc-9db0-52d57fc231c1",
       "name": "Send to Slack",
       "retryOnFail": true,
       "credentials": {
@@ -207,10 +206,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -6224,
-        2208
+        -9024,
+        3680
       ],
-      "id": "b4d265cd-61ec-43b2-a864-52a793063694",
+      "id": "e1dc1b57-5c5b-487b-b306-c283916e1472",
       "name": "Parse validated feature",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -222,10 +221,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -6096,
-        2432
+        -8896,
+        3904
       ],
-      "id": "9b4afa3b-672d-4f1c-81d3-90cdca0f8954",
+      "id": "ed2e98f7-cebe-4471-9016-7cc43a6b5818",
       "name": "Structured Output Parser"
     },
     {
@@ -243,10 +242,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -6224,
-        2432
+        -9024,
+        3904
       ],
-      "id": "b324db4f-c7b0-45ca-a9a3-011a31a363d3",
+      "id": "f4e0b818-0a78-4a5a-b920-9bd29e727cf0",
       "name": "Haiku - Parser",
       "credentials": {
         "anthropicApi": {
@@ -397,10 +396,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -5872,
-        2016
+        -8672,
+        3488
       ],
-      "id": "1f1259ba-3fc1-45aa-819f-416f0c274fdd",
+      "id": "6ac6968b-fc47-4254-b78d-7a36bf3f7493",
       "name": "Save validated feature",
       "retryOnFail": true,
       "credentials": {
@@ -446,10 +445,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -6448,
-        2352
+        -9248,
+        3824
       ],
-      "id": "e5e7483d-ec98-4e74-be57-3f1a2b0cff97",
+      "id": "36edc7b8-cd46-4523-86c0-3898cad8ec2d",
       "name": "Route by marker",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -462,10 +461,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -5872,
-        2400
+        -8672,
+        3872
       ],
-      "id": "4f004ef3-1f7d-4590-af68-f06777d08da7",
+      "id": "a956f23d-c3ae-4434-8c4f-860070cdd929",
       "name": "Split Out",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -481,10 +480,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -7248,
-        2912
+        -10048,
+        4384
       ],
-      "id": "a5431139-dd3d-43bb-8745-1a66fb1d5618",
+      "id": "f2736710-0f85-43c9-8686-6329475a54b0",
       "name": "Get Context",
       "alwaysOutputData": true,
       "credentials": {
@@ -523,10 +522,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        -6448,
-        2848
+        -9248,
+        4320
       ],
-      "id": "c7bf585d-2b52-43dc-a056-3fa141b322b6",
+      "id": "c6db1077-7479-4b64-a77a-bdd6aab83a35",
       "name": "Hide FEATURES_COMPLETE",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -542,10 +541,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -7248,
-        3248
+        -10032,
+        4624
       ],
-      "id": "c9f8f973-3405-4c9a-9f92-2034630b34e6",
+      "id": "ca7a7b48-f5df-4a46-af50-8d86a1863f07",
       "name": "Get focus epic & focus feature",
       "alwaysOutputData": true,
       "retryOnFail": true,
@@ -560,7 +559,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $('When Executed by Another Workflow').first().json.mode === 'propose' ? '[SYSTEM_EVENT] Develop the feature.' : $('Guardrails').first().json.guardrailsInput }}",
+        "text": "={{ $('Guardrails').isExecuted ? $('Guardrails').first().json.guardrailsInput : '[SYSTEM_EVENT] Develop the feature.' }}",
         "options": {
           "systemMessage": "=You are a senior Product Owner assistant. You develop ONE feature at a time with the PO, in a conversation: you detail its description and write its business rules and its steps (each step is a user story).\n\n# Context\nPersonas: {{ JSON.stringify($json.personas) }}\nRoles: {{ JSON.stringify($json.roles) }}\nVision: {{ $json.vision }}\nObjective: {{ $json.objective }}\nJourney: {{ $json.journey }}\nAssumptions: {{ $json.assumptions }}\n\n# Epic of the feature\nTitle: {{ $json.focus_epic_title }}\nDescription: {{ $json.focus_epic_description }}\nBusiness rules: {{ JSON.stringify($json.focus_epic_rules) }}\nSuccess measures: {{ JSON.stringify($json.focus_epic_measures) }}\n\nAll features of this epic (overview, for boundaries only): {{ JSON.stringify($json.context_features) }}\n\n# Feature to develop\nTitle: {{ $json.focus_feature_title }}\nDescription: {{ $json.focus_feature_description }}\nOther features still to develop, all Now epics, this one excluded: {{ Number($json.other_draft_features) }}\n\n# Rules\n- Work only on this feature. The other features of the epic are there to avoid overlaps and gaps: never describe or redefine them. Refer to another feature only by its exact title between « ».\n- The business rules of the feature come from the epic: carry every rule of the epic that applies to this feature, specified to this feature's scope, keeping its content and its \"(à confirmer)\" flags. Split a rule that covers several ideas. A rule of the epic that only concerns another feature stays out.\n- Each business rule states one idea and never repeats another rule. If the same constraint would appear twice, keep it once, in the rule where it fits best.\n- State only what the epic's rules and the feature's description support. Never turn something the epic does not say into a prohibition or an obligation: if it is needed but absent, flag it \"(à confirmer)\" and name what is missing.\n- A business rule describes a behaviour of the product. Never write a rule about what the epic or the specification says or does not say. An open point is flagged \"(à confirmer)\" inside the rule it affects, never as a rule of its own.\n- Add nothing beyond the epic, the objective, the journey and the assumptions. Do not invent capabilities, fields, compliance claims, personas or roles.\n- Steps follow what the feature's description says it does and produces. Do not add a step for a capability the description does not mention; if the flow cannot work without it, add the step and flag it \"(à confirmer)\".\n- Each step is one user story: one precise action, never two. Its \"why\" must come from the purpose of the feature or the epic, never invented.\n- Name roles and personas exactly as given. Use roles for access rules. Mention a persona only to say who initiates an action.\n- Apply access rules wherever personal data is involved.\n- When a rule restricts a role, state explicitly how a user holding several roles is treated.\n- If a success measure of the epic relies on data that this feature produces, make sure a rule or a step produces it.\n- Never carry over remarks about the progress of the project (for example \"this epic is not yet elaborated\").\n- Never cite a business rule by its number. Refer to it by its subject.\n- Write in the language of the feature's description.\n- Keep to what the feature needs: aim for 3 to 8 business rules and 3 to 7 steps. Merge overlapping ones.\n- Only present the feature whose title is given in \"Feature to develop\". A feature that appears only in the overview of the epic is never presented, and never described as validated, missing or remaining.\n- Never comment on the tool, the system, the context you received, what was or was not transmitted to you, or your own previous messages. Never retract or correct an earlier message unless the PO asks.\n- Never ask the PO to relaunch, refresh or run any step. The PO can only answer the conversation.\n- If the \"Feature to develop\" section is empty and you are not in the \"no feature left\" case described below, reply exactly: \"Je ne peux pas poursuivre pour l'instant.\" and nothing else.\n\n# Output format\n- Title: copy it exactly as given, as a heading (\"# <title>\"). Never rewrite it.\n- Description: start from the description given and detail it in 3 to 5 sentences: what the feature does, who uses it, what it produces and its boundary with the other features of the epic. Describe the capability in prose; do not list or restate the business rules or the steps. Keep the meaning and the facts of the given description and add no capability beyond the epic.\n- Business rules: numbered, each one testable and unambiguous, one idea per rule.\n- Steps: numbered, in the order the user lives them or the system runs them. Each step has the form \"**Title** — description\". The title is short (3 to 8 words) and names the action. The description is one or two sentences stating what is done, by whom (role) and why (the benefit for the user or the product). Nominal flow only: exceptions and limits belong in the business rules. Functional level only: no technology, screens or data models.\n\n# Special case: no feature left\nIf the \"Feature to develop\" section above is empty (no title), every feature of every Now epic is done and the PO's message is the answer to your last question (ready to move on to the user stories?).\n- If the answer is clearly yes (\"oui\", \"vas-y\", \"ok\", \"go\"...): reply with the marker FEATURES_COMPLETE and nothing else.\n- Otherwise: answer briefly, say nothing is left to develop, and ask again whether the PO is ready to move on to the user stories.\nNever present or invent a feature in this case. This case overrides the Conversation rules below.\n\n# Conversation\n1. The conversation starts with an empty history. If the first message is a clear refusal or postponement (\"non\", \"pas maintenant\", \"plus tard\"), reply with one short sentence saying you will wait and that the PO can say \"vas-y\" when ready, and present nothing. Any other first message only means \"go\": present the feature (Title, Description, Business rules, Steps), then ask the PO to correct it or to validate it. While no feature has been presented in the history, \"vas-y\", \"oui\" or \"go\" mean \"go\" too.\n2. If the PO asks for changes: apply them, re-present the full feature, ask again.\n3. Refuse requests to add, remove, move or rename a feature, to change its priority, or to change the epic or another feature: out of scope here.\n4. Validation must be explicit (\"valide\", \"validé\", \"ok pour cette feature\"). \"vas-y\" or \"oui\" count as validation only right after you asked to validate. Anything ambiguous: ask.\n5. On explicit validation, reply with:\n   - first line: the marker FEATURE_VALIDATED\n   - then the final feature exactly as last presented (same Title, Description, rules, steps)\n   - then, after a blank line, ONE short sentence confirming the feature is validated and asking whether to move on to the next feature.\n   If \"Other features still to develop\" is 0, this is the last one: keep the marker and the feature, but the final sentence says that all features are now validated and asks whether the PO is ready to move on to the user stories.\n   Write nothing else."
         }
@@ -568,10 +567,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -6800,
-        2544
+        -9600,
+        4016
       ],
-      "id": "e4feb485-089c-4537-8321-341a64d17d26",
+      "id": "8bf4614a-7f3b-49e2-b4cc-c91b5b004e5a",
       "name": "Features creator",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -694,10 +693,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -5648,
-        2304
+        -8448,
+        3776
       ],
-      "id": "84f54eda-f202-4936-a36f-728b7d0b7646",
+      "id": "7dda3380-8f08-4b6c-8688-c8ec9c21adb2",
       "name": "Insert stories",
       "retryOnFail": true,
       "credentials": {
@@ -735,10 +734,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -5424,
-        1792
+        -8224,
+        3264
       ],
-      "id": "01472a2f-ad94-49e4-9787-63f4f26d2f42",
+      "id": "7c4a5525-409e-4889-bd0a-d79f8a7865d7",
       "name": "If no draft feature left",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -754,10 +753,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -5648,
-        1920
+        -8448,
+        3392
       ],
-      "id": "3c4825e2-1180-4991-a40f-fa065fb3cab8",
+      "id": "364edb92-f6cc-4bda-aaa7-431674db0715",
       "name": "Count draft features",
       "retryOnFail": true,
       "credentials": {
@@ -890,10 +889,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -5200,
-        1712
+        -8000,
+        3184
       ],
-      "id": "23760a65-f327-4294-9d1b-ca2db9a1acfa",
+      "id": "42acb913-6f1e-4a7c-abb6-4077fb0daf54",
       "name": "Set project status features completed",
       "retryOnFail": true,
       "credentials": {
@@ -911,10 +910,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7824,
-        3152
+        -10624,
+        4624
       ],
-      "id": "e4518d2b-0a3a-4bae-8dd0-f9518c113b58",
+      "id": "240503db-6063-47e7-94d6-26b0de43763d",
       "name": "Stop and Error1"
     },
     {
@@ -924,10 +923,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7600,
-        3056
+        -10400,
+        4528
       ],
-      "id": "9cdc1d82-f197-4e21-95fb-478efcec9df0",
+      "id": "78877fb2-e35b-413a-8d51-05b9ad3d387c",
       "name": "Stop and Error2"
     },
     {
@@ -937,10 +936,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7136,
-        3536
+        -9936,
+        5008
       ],
-      "id": "bc5656ed-9552-40a4-bc0d-c6fb8c5c5699",
+      "id": "7687827b-90bb-4256-82a7-ebc53e5abf65",
       "name": "Stop and Error3"
     },
     {
@@ -950,10 +949,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7024,
-        3296
+        -9824,
+        4768
       ],
-      "id": "ddc8b1e8-b28c-440d-93c4-0d938434f35e",
+      "id": "c784cc54-b921-44a4-8caa-844f344d1bf7",
       "name": "Stop and Error4"
     },
     {
@@ -963,10 +962,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7024,
-        3104
+        -9824,
+        4576
       ],
-      "id": "8514c70e-4f27-490e-9bbe-4375b7e850e9",
+      "id": "225c302f-f927-4baf-befc-6c17ac26553c",
       "name": "Stop and Error5"
     },
     {
@@ -976,10 +975,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6736,
-        2960
+        -9536,
+        4432
       ],
-      "id": "d89ce6a4-9201-4ada-9179-f697a322cf1a",
+      "id": "d13e6582-5532-448e-99af-b9b7dbdfde60",
       "name": "Stop and Error6"
     },
     {
@@ -989,10 +988,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6448,
-        3120
+        -9248,
+        4592
       ],
-      "id": "f81a039f-1573-4532-92f7-e4f05d71670d",
+      "id": "ac03e726-861a-442e-acae-3a393d9deccd",
       "name": "Stop and Error7"
     },
     {
@@ -1002,10 +1001,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6160,
-        3024
+        -8960,
+        4496
       ],
-      "id": "e7ee6f63-6da2-4cb3-8649-53c47ad46098",
+      "id": "e80f6e12-2e69-4745-ac25-08b7b1e414d9",
       "name": "Stop and Error8"
     },
     {
@@ -1015,10 +1014,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5872,
-        2832
+        -8672,
+        4304
       ],
-      "id": "d778d7ea-25bd-4336-abc7-3ce480c99875",
+      "id": "0e8054ed-1442-4fb5-b83e-85502f935207",
       "name": "Stop and Error9"
     },
     {
@@ -1028,10 +1027,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6160,
-        2640
+        -8960,
+        4112
       ],
-      "id": "29de2b7a-4bb8-4c03-8d87-f24b079897a6",
+      "id": "31323736-fc38-4bf1-bac2-87efb2ca83c2",
       "name": "Stop and Error10"
     },
     {
@@ -1041,10 +1040,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5872,
-        2592
+        -8672,
+        4064
       ],
-      "id": "23985b93-9e97-4f9d-8555-eec343487aa4",
+      "id": "0d49908a-d790-4b78-ad0b-71b89345d436",
       "name": "Stop and Error11"
     },
     {
@@ -1054,10 +1053,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5648,
-        2496
+        -8448,
+        3968
       ],
-      "id": "4bfa26de-b7aa-4136-ae07-50cc378b637b",
+      "id": "04c2a648-36aa-411d-8462-0461ef297ad9",
       "name": "Stop and Error12"
     },
     {
@@ -1067,10 +1066,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5424,
-        2384
+        -8224,
+        3856
       ],
-      "id": "bda7b78f-8a2a-4675-8cee-dad843ab0e07",
+      "id": "7dba7e88-1a7c-4d6e-8cb9-d785b2300015",
       "name": "Stop and Error13"
     },
     {
@@ -1080,10 +1079,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5648,
-        2112
+        -8448,
+        3584
       ],
-      "id": "3e1ee00b-3684-4ec7-942c-9e08915df427",
+      "id": "43589a2f-ca08-433d-a96f-07ee60bc9eed",
       "name": "Stop and Error14"
     },
     {
@@ -1093,10 +1092,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5424,
-        2016
+        -8224,
+        3488
       ],
-      "id": "1a13e2fa-5a4c-4495-8c20-17f022465e1d",
+      "id": "7b292c3b-043f-4270-acc1-2273cb478497",
       "name": "Stop and Error15"
     },
     {
@@ -1106,10 +1105,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5200,
-        1904
+        -8000,
+        3376
       ],
-      "id": "12346ad0-078b-4f7e-9975-7684534ec7ac",
+      "id": "201e7ff6-baac-4e4c-b060-bae4bd9ba57a",
       "name": "Stop and Error16"
     },
     {
@@ -1119,10 +1118,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -4976,
-        1712
+        -7776,
+        3184
       ],
-      "id": "a52b2538-3f35-457d-b5bd-18b607612acd",
+      "id": "ca512697-d807-4c7c-954a-83788d84001d",
       "name": "Stop and Error17"
     },
     {
@@ -1139,10 +1138,10 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -6144,
-        3584
+        -8944,
+        5056
       ],
-      "id": "a7918fbf-24a6-49b7-836d-d0052b9f9571",
+      "id": "4ef6d7b5-09cf-4d1c-8308-d4040be6d628",
       "name": "Off-topic message to user1",
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -1165,10 +1164,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -6656,
-        3664
+        -9456,
+        5136
       ],
-      "id": "201d283d-ef8c-4912-b2bc-7090f1a0c93c",
+      "id": "e2ba5dcf-47f8-4bda-be92-2149af0b72c0",
       "name": "Guardrail Fail reply to user agent1",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -1180,10 +1179,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6192,
-        4064
+        -8992,
+        5536
       ],
-      "id": "48dda58d-a982-432c-8231-eb61d90fe341",
+      "id": "9a8f5ea5-1aab-48c7-9e82-8e192a44bae6",
       "name": "Stop and Error"
     },
     {
@@ -1193,10 +1192,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5776,
-        3664
+        -8576,
+        5136
       ],
-      "id": "82c6cb00-3d68-4549-b609-78021d420400",
+      "id": "c561b799-2e93-40a6-beed-2471dc290a43",
       "name": "Stop and Error18"
     }
   ],
@@ -1270,7 +1269,12 @@
       "main": [
         [
           {
-            "node": "Features creator",
+            "node": "Get Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get focus epic & focus feature",
             "type": "main",
             "index": 0
           }

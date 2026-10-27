@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.2,
       "position": [
-        -8224,
-        6384
+        -14816,
+        10784
       ],
-      "id": "b6c241bc-d6e0-416d-ae14-be3badf4c5f7",
+      "id": "df001477-8b1e-4887-a092-a55d6a600be7",
       "name": "When Executed by Another Workflow",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -34,10 +34,10 @@
       "type": "@n8n/n8n-nodes-langchain.guardrails",
       "typeVersion": 2,
       "position": [
-        -7776,
-        6704
+        -14368,
+        11104
       ],
-      "id": "d8e70ef4-a8dd-47ae-aa5e-b7d1aba8ec5b",
+      "id": "b9fbfd85-0867-4ad9-8198-904e2ca90f8d",
       "name": "Guardrails",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -55,10 +55,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -7632,
-        7264
+        -14224,
+        11664
       ],
-      "id": "46fa12bc-a679-464f-81e8-77f23284e13f",
+      "id": "b33c39eb-af88-4bcb-9d52-f6b85e2bb8cf",
       "name": "Haiku - Guardrails",
       "credentials": {
         "anthropicApi": {
@@ -94,10 +94,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -8000,
-        6256
+        -14592,
+        10656
       ],
-      "id": "c4293561-a186-4fe2-9b47-eda4a990942d",
+      "id": "bbc5e13a-9f6f-4b24-8eac-9c402eab2f3b",
       "name": "If propose mode",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -105,15 +105,15 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "=={{ $('When Executed by Another Workflow').item.json.channel_id }}-epic-{{ $('Get focus epic').first().json.focus_epic_id ?? 'done' }}"
+        "sessionKey": "=={{ $('When Executed by Another Workflow').item.json.channel_id }}-epic-{{ $('Get focus epic').isExecuted ? ($('Get focus epic').first().json.focus_epic_id ?? 'done') : 'start' }}"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.4,
       "position": [
-        -6848,
-        6208
+        -13440,
+        10608
       ],
-      "id": "7b7400a3-7baa-4f66-8fb0-501fa0eafa63",
+      "id": "19c24c95-95b4-4785-82be-38b326a20441",
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
@@ -137,10 +137,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -6976,
-        6208
+        -13568,
+        10608
       ],
-      "id": "2a6a48c4-85b7-49fc-b073-865063873d9a",
+      "id": "fc8818e4-c02d-4e47-abd1-68ecea452d4b",
       "name": "Opus - Epics creator",
       "credentials": {
         "anthropicApi": {
@@ -160,10 +160,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -7200,
-        6352
+        -13792,
+        10752
       ],
-      "id": "200a25e4-5f15-445a-8d2e-a18c559fa342",
+      "id": "a30d0b68-1d20-4ec3-809d-a78d342fdfd9",
       "name": "Merge context",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -180,10 +180,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -6400,
-        5648
+        -12992,
+        10048
       ],
-      "id": "1b016f32-5336-4faa-a4ed-91b939b0f5d8",
+      "id": "bf395c9c-6091-4507-af79-a3791b1ae8dd",
       "name": "Parse validated epic",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -195,10 +195,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -6272,
-        5872
+        -12864,
+        10272
       ],
-      "id": "6c2e8fac-8343-45d7-80bf-82bcf9dcde25",
+      "id": "b84cab8a-2346-4b1b-b5e8-846865157bd2",
       "name": "Structured Output Parser"
     },
     {
@@ -216,10 +216,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -6400,
-        5872
+        -12992,
+        10272
       ],
-      "id": "31c0ae72-86ed-48b1-b6cf-046b8edfe5d3",
+      "id": "bd8782a3-6e3c-4522-a0fe-3b8b8513da1a",
       "name": "Haiku - Parser",
       "credentials": {
         "anthropicApi": {
@@ -233,16 +233,16 @@
         "promptType": "define",
         "text": "={{ $('When Executed by Another Workflow').first().json.mode === 'propose' ? '[SYSTEM_EVENT] Develop the epic.' : $('Guardrails').first().json.guardrailsInput }}",
         "options": {
-          "systemMessage": "=You are a senior Product Owner assistant. You develop ONE epic at a time with the PO, in a conversation.\n\n# Context\nElevator pitch: {{ $json.elevator_pitch }}\nPersonas: {{ JSON.stringify($json.personas) }}\nRoles: {{ JSON.stringify($json.roles) }}\nVision: {{ $json.vision }}\nObjective: {{ $json.objective }}\nJourney: {{ $json.journey }}\nAssumptions: {{ $json.assumptions }}\n\nAll Now epics (overview, for boundaries only; each has a status \"draft\" or \"validated\"): {{ JSON.stringify($json.contexte_epics) }}\n\n# Epic to develop\nTitle: {{ $json.focus_epic_title }}\nShort description: {{ $json.focus_epic_description }}\n\n# Rules\n- Work only on this epic. The other epics are there to avoid overlaps and gaps: never redefine or develop them.\n- Add nothing beyond the pitch, objective, journey and assumptions. Do not invent capabilities, compliance claims or personas.\n- Name roles and personas exactly as given. Refer to other epics only by their exact title between « ».\n- Use roles for access rules. Mention a persona only to say who initiates an action.\n- Apply access rules wherever personal data is involved.\n- When a rule restricts a role, state explicitly how a user holding several roles is treated.\n- If the epic creates or manages users or accounts, cover how a user gets access (invitation, activation, deactivation) or state explicitly that it is out of scope. Mention user accounts, role administration or access lifecycle in the boundary only if the epic really touches them. Never add a boundary sentence just to say what the epic does not do.\n- Write in the language of the epic's short description.\n- Do not introduce supporting capabilities absent from the pitch and the journey (audit logs, admin consoles, monitoring, QA processes). If a measure would need one, pick a measure that the product can produce with the capabilities already described, or flag it \"(à confirmer)\" and say which capability it requires.\n- A success measure must be computable from the capabilities and data already described in the rules and how blocks of this epic or of validated epics. Never rely on a field or capability that no epic defines; otherwise flag it \"(à confirmer)\" and name it.\n- Keep to what the epic needs: aim for 8 to 12 business rules, 3 to 7 how blocks and 3 to 5 success measures. Merge overlapping ones.\n- Never cite a business rule by its number (the numbering can change after a correction). Refer to it by its subject.\n\n# Output format\n- Description: 4 to 6 sentences, boundary included in at most 2 sentences. Cover the purpose, who it serves, what it enables and its boundary with neighbouring epics. Describe the capability in prose; do not list or restate the business rules or the per-role permissions, those belong in the rules.\n- Business rules: numbered, each one testable and unambiguous, one idea per rule.\n- How: - How: numbered, 3 to 7 functional building blocks, in the order the user experiences them or the system runs them. Each block: \"Name — what it does, for whom, what it produces. Priority: P1\" (label in the PO's language). Priority P1 (highest) to P3, judged on product value delivered, dependencies and complexity of realization; several blocks may share a level. Functional level only: no technology, architecture, screens or data models. Each block must be specific enough to be split later into features. Every business rule must be carried by at least one block, and no block may introduce a capability or rule that is not in the pitch, the journey, the assumptions or the business rules.\n- Success measures: numbered, each with a name, a precise indicator, how it is measured (event, log, audit, report: never just \"controls\") and a target. Tie them to the objective when the epic contributes to it. Mark any assumed figure \"(à confirmer)\" in the PO's language.\n\n# Special case: no epic left\nIf every epic in the overview has status \"validated\", all Now epics are done and the PO's message is the answer to your last question (ready to move on to the features?).\n- If the answer is clearly yes (\"oui\", \"vas-y\", \"ok\", \"go\"...): reply with the marker EPICS_COMPLETE and nothing else.\n- Otherwise: answer briefly, say nothing is left to develop, and ask again whether the PO is ready to move on to the features.\nNever present or invent an epic in this case. This case overrides the Conversation rules below.\n\n# Conversation\n1. The conversation starts with an empty history. Whatever the first message says (\"oui\", \"suivant\", \"vas-y\", [SYSTEM_EVENT]...), it only means \"go\": present the epic (Description, Business rules, How, Success measures), then ask the PO to correct it or to validate it.\n2. If the PO asks for changes: apply them, re-present the full epic, ask again.\n3. Refuse requests to add, remove or move an epic, or to change another epic: out of scope here.\n4. Validation must be explicit (\"valide\", \"validé\", \"ok pour cet epic\"). \"vas-y\" or \"oui\" count as validation only right after you asked to validate. Anything ambiguous: ask.\n5. On explicit validation, reply with:\n   - first line: the marker EPIC_VALIDATED\n   - then the final epic exactly as last presented (same Description, rules, how, measures)\n   - then, after a blank line, ONE short sentence confirming the epic is validated and asking whether to move on to the next epic.\n   If every other epic in the overview has status \"validated\", this is the last one: keep the marker and the epic, but the final sentence says that all epics are now validated and asks whether the PO is ready to move on to the features.\n   Write nothing else."
+          "systemMessage": "=You are a senior Product Owner assistant. You develop ONE epic at a time with the PO, in a conversation.\n\n# Context\nElevator pitch: {{ $json.elevator_pitch }}\nPersonas: {{ JSON.stringify($json.personas) }}\nRoles: {{ JSON.stringify($json.roles) }}\nVision: {{ $json.vision }}\nObjective: {{ $json.objective }}\nJourney: {{ $json.journey }}\nAssumptions: {{ $json.assumptions }}\n\nAll Now epics (overview, for boundaries only; each has a status \"draft\" or \"validated\"): {{ JSON.stringify($json.contexte_epics) }}\n\n# Epic to develop\nTitle: {{ $json.focus_epic_title }}\nShort description: {{ $json.focus_epic_description }}\n\n# Rules\n- Work only on this epic. The other epics are there to avoid overlaps and gaps: never redefine or develop them.\n- Add nothing beyond the pitch, objective, journey and assumptions. Do not invent capabilities, compliance claims or personas.\n- Name roles and personas exactly as given. Refer to other epics only by their exact title between « ».\n- Use roles for access rules. Mention a persona only to say who initiates an action.\n- Apply access rules wherever personal data is involved.\n- When a rule restricts a role, state explicitly how a user holding several roles is treated.\n- If the epic creates or manages users or accounts, cover how a user gets access (invitation, activation, deactivation) or state explicitly that it is out of scope. Mention user accounts, role administration or access lifecycle in the boundary only if the epic really touches them. Never add a boundary sentence just to say what the epic does not do.\n- Write in the language of the epic's short description.\n- Do not introduce supporting capabilities absent from the pitch and the journey (audit logs, admin consoles, monitoring, QA processes). If a measure would need one, pick a measure that the product can produce with the capabilities already described, or flag it \"(à confirmer)\" and say which capability it requires.\n- A success measure must be computable from the capabilities and data already described in the rules and how blocks of this epic or of validated epics. Never rely on a field or capability that no epic defines; otherwise flag it \"(à confirmer)\" and name it.\n- Keep to what the epic needs: aim for 8 to 12 business rules, 3 to 7 how blocks and 3 to 5 success measures. Merge overlapping ones.\n- Never cite a business rule by its number (the numbering can change after a correction). Refer to it by its subject.\n\n# Output format\n- Description: 4 to 6 sentences, boundary included in at most 2 sentences. Cover the purpose, who it serves, what it enables and its boundary with neighbouring epics. Describe the capability in prose; do not list or restate the business rules or the per-role permissions, those belong in the rules.\n- Business rules: numbered, each one testable and unambiguous, one idea per rule.\n- How: - How: numbered, 3 to 7 functional building blocks, in the order the user experiences them or the system runs them. Each block: \"Name — what it does, for whom, what it produces. Priority: P1\" (label in the PO's language). Priority P1 (highest) to P3, judged on product value delivered, dependencies and complexity of realization; several blocks may share a level. Functional level only: no technology, architecture, screens or data models. Each block must be specific enough to be split later into features. Every business rule must be carried by at least one block, and no block may introduce a capability or rule that is not in the pitch, the journey, the assumptions or the business rules.\n- Success measures: numbered, each with a name, a precise indicator, how it is measured (event, log, audit, report: never just \"controls\") and a target. Tie them to the objective when the epic contributes to it. Mark any assumed figure \"(à confirmer)\" in the PO's language.\n\n# Special case: no epic left\nIf every epic in the overview has status \"validated\", all Now epics are done and the PO's message is the answer to your last question (ready to move on to the features?).\n- If the answer is clearly yes (\"oui\", \"vas-y\", \"ok\", \"go\"...): reply with the marker EPICS_COMPLETE and nothing else.\n- Otherwise: answer briefly, say nothing is left to develop, and ask again whether the PO is ready to move on to the features.\nNever present or invent an epic in this case. This case overrides the Conversation rules below.\n\n# Conversation\n1. The conversation starts with an empty history. Whatever the first message says (\"oui\", \"suivant\", \"vas-y\", [SYSTEM_EVENT]...), it only means \"go\": present the epic (Description, Business rules, How, Success measures), then ask the PO to correct it or to validate it.\n2. If the PO asks for changes: apply them, re-present the full epic, ask again.\n3. Refuse requests to add, remove or move an epic, or to change another epic: out of scope here.\n4. Validation must be explicit (\"valide\", \"validé\", \"ok pour cet epic\"). \"vas-y\" or \"oui\" count as validation only right after you asked to validate. Anything ambiguous: ask.\n5. On explicit validation, reply with:\n   - first line: the marker EPIC_VALIDATED\n   - then the final epic exactly as last presented (same Description, rules, how, measures)\n   - then, after a blank line, ONE short sentence confirming the epic is validated and asking whether to move on to the next epic.\n   If every other epic in the overview has status \"validated\", this is the last one: keep the marker and the epic, but the final sentence only says that all epics are now validated. It asks no question and does not mention what comes next.\n   Write nothing else."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -6976,
-        5984
+        -13568,
+        10384
       ],
-      "id": "ae87b3f6-4692-4528-99b4-1c71e1cb5791",
+      "id": "3a115f23-ccdb-4135-957e-d5df77b70b9f",
       "name": "Epics creator"
     },
     {
@@ -256,10 +256,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -7424,
-        6688
+        -14016,
+        11088
       ],
-      "id": "c68ab177-bb99-4ee4-b93f-7988a25ec37f",
+      "id": "fa0c3233-f0e8-4f68-9e50-f3a431aeacd8",
       "name": "Get focus epic",
       "alwaysOutputData": true,
       "retryOnFail": true,
@@ -428,10 +428,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -6048,
-        5456
+        -12640,
+        9856
       ],
-      "id": "9d3c3a7a-9909-4980-af7b-f035d272811b",
+      "id": "ba294896-aedb-4a0d-8e09-22ab9e054698",
       "name": "Save validated epic",
       "retryOnFail": true,
       "credentials": {
@@ -477,10 +477,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -6624,
-        5792
+        -13216,
+        10192
       ],
-      "id": "c0b7cfb4-ee96-4984-8698-71c4a8324dcf",
+      "id": "050e147e-d85e-47d6-8df1-3b13ae487450",
       "name": "Route by marker",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -514,10 +514,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -5152,
-        5056
+        -11744,
+        9456
       ],
-      "id": "a89c7ae8-02a6-4753-a119-378df368dbcc",
+      "id": "1b2db39d-7a6a-4077-a216-3236cdff1749",
       "name": "Set 05 call inputs",
       "executeOnce": true,
       "retryOnFail": true,
@@ -544,10 +544,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -4928,
-        4960
+        -11520,
+        9360
       ],
-      "id": "7099a685-6bad-48a6-bea4-dca166b53c66",
+      "id": "9661afa9-2916-4b93-86d0-3f1533564330",
       "name": "Call 05 Features",
       "executeOnce": true,
       "retryOnFail": true,
@@ -561,10 +561,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -6048,
-        5840
+        -12640,
+        9712
       ],
-      "id": "205d8cd1-7902-4081-acb3-8de31e5b4700",
+      "id": "83d58d83-01f5-4c7c-a285-80a60ebbb7d9",
       "name": "Split Out",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -707,10 +707,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -5824,
-        5744
+        -12416,
+        9616
       ],
-      "id": "b446a308-4582-4a56-96a4-d2e017a9d9c5",
+      "id": "c671371c-f6b1-4483-b35b-ef5dbad190ab",
       "name": "Insert features",
       "retryOnFail": true,
       "credentials": {
@@ -843,10 +843,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -5376,
-        5152
+        -11968,
+        9552
       ],
-      "id": "783aa0b3-c563-470e-96bd-a82ac960bd94",
+      "id": "c5f25682-e2f0-49ed-839e-4bffa46083eb",
       "name": "Set project status epics_completed",
       "retryOnFail": true,
       "credentials": {
@@ -868,10 +868,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -7424,
-        6352
+        -14016,
+        10752
       ],
-      "id": "b7862e9a-2253-47eb-9c4f-41d418b1c862",
+      "id": "b589cc25-02c9-49e3-b73e-8e432e4fd40c",
       "name": "Get Context",
       "alwaysOutputData": true,
       "credentials": {
@@ -896,10 +896,10 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -6336,
-        6272
+        -12928,
+        9904
       ],
-      "id": "f8f96ee2-6054-4ccf-a473-7df5e340d4a5",
+      "id": "6c5a8ab5-e25a-4b7e-826e-a554a7966a36",
       "name": "Send to Slack1",
       "retryOnFail": true,
       "credentials": {
@@ -938,10 +938,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        -6624,
-        6368
+        -13216,
+        10000
       ],
-      "id": "100e4337-b5f9-4f5b-82b6-e4fe27cac09f",
+      "id": "f91fdbc6-2424-4fd6-b6b8-514b097b4e39",
       "name": "Hide EPICS_COMPLETE1",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -957,10 +957,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -5824,
-        5360
+        -12416,
+        9760
       ],
-      "id": "219eeed3-fc4a-4e07-87a5-49e1b06127f6",
+      "id": "add70f05-9967-4321-b8e5-17134eea7146",
       "name": "Execute a SQL query",
       "retryOnFail": true,
       "credentials": {
@@ -998,10 +998,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -5600,
-        5232
+        -12192,
+        9632
       ],
-      "id": "8c12596b-b58a-4458-af49-0e53ccf319b9",
+      "id": "c1679f67-1a48-48de-99b5-8e0533f1234d",
       "name": "If",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -1013,10 +1013,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -8000,
-        6480
+        -14592,
+        10880
       ],
-      "id": "4cad57f8-4f59-4e8e-9926-dda26c3c843d",
+      "id": "34a480fe-485c-4ff2-9911-e8039b13abd7",
       "name": "Stop and Error1"
     },
     {
@@ -1026,10 +1026,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7712,
-        6080
+        -14304,
+        10480
       ],
-      "id": "896fe08d-b953-4a23-b043-d4e15610b938",
+      "id": "199098ae-733f-415b-b7de-8e370e93c58a",
       "name": "Stop and Error2"
     },
     {
@@ -1039,10 +1039,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7440,
-        6944
+        -14032,
+        11344
       ],
-      "id": "dc0d65fe-d58f-426d-a1ec-5cce27af464f",
+      "id": "773184f0-936c-4f1b-ae07-748deb5b4dec",
       "name": "Stop and Error3"
     },
     {
@@ -1052,10 +1052,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7200,
-        6736
+        -13792,
+        11136
       ],
-      "id": "629ac14e-f862-41ce-a6ca-4b9e8705553a",
+      "id": "696d20ae-489c-4f06-9c65-90f3a6670e21",
       "name": "Stop and Error4"
     },
     {
@@ -1065,10 +1065,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7200,
-        6544
+        -13792,
+        10944
       ],
-      "id": "4b0afdc3-5d46-4b7c-994f-7b7ebba3e3cc",
+      "id": "c6b7e72a-bb84-4184-831a-704c1971ca3f",
       "name": "Stop and Error5"
     },
     {
@@ -1078,10 +1078,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6912,
-        6400
+        -13504,
+        10800
       ],
-      "id": "a91ed969-8571-4c43-a3b2-068ca8fa54bc",
+      "id": "e3b932fc-0b46-46c6-b6e2-b823cf871322",
       "name": "Stop and Error6"
     },
     {
@@ -1091,10 +1091,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6336,
-        6080
+        -12928,
+        10480
       ],
-      "id": "1038d838-0c0c-42d1-b860-7f40dcf1b5d5",
+      "id": "4b64007b-9594-41b0-8458-61eda07a7f1f",
       "name": "Stop and Error7"
     },
     {
@@ -1104,10 +1104,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6336,
-        6464
+        -12928,
+        10864
       ],
-      "id": "2b40d4a2-a795-44cc-8651-f1dd020c4ba5",
+      "id": "9abf4feb-1aa8-4a06-8cbc-25eef984a635",
       "name": "Stop and Error8"
     },
     {
@@ -1117,10 +1117,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6048,
-        6272
+        -12640,
+        10672
       ],
-      "id": "9559e24a-5ecd-4a5c-9f85-2b5c2277b33d",
+      "id": "07d66251-089d-412d-afc8-9f7fffa24691",
       "name": "Stop and Error9"
     },
     {
@@ -1130,10 +1130,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6048,
-        6032
+        -12640,
+        10432
       ],
-      "id": "af753f42-ffc6-4eaa-9da7-ee1959094f74",
+      "id": "86f96153-02b0-478c-a2af-ba1e0303c880",
       "name": "Stop and Error10"
     },
     {
@@ -1143,10 +1143,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5824,
-        5936
+        -12416,
+        10336
       ],
-      "id": "d55df838-7cea-4d00-90fd-700b9cb0bcfd",
+      "id": "eff4e854-a311-4bbf-b733-d466cf9d3247",
       "name": "Stop and Error11"
     },
     {
@@ -1156,10 +1156,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5600,
-        5744
+        -12192,
+        10144
       ],
-      "id": "a80fbf08-3886-4b7c-9ba0-7ed999fbb0ae",
+      "id": "f9bdd803-be18-44fe-8293-be1d299adc99",
       "name": "Stop and Error12"
     },
     {
@@ -1169,10 +1169,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5824,
-        5552
+        -12416,
+        9952
       ],
-      "id": "4e9c6b06-4f2b-4c04-becf-4a6186529938",
+      "id": "46199365-63a8-463e-992b-1c64caad9b7f",
       "name": "Stop and Error13"
     },
     {
@@ -1182,10 +1182,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5600,
-        5456
+        -12192,
+        9856
       ],
-      "id": "93f00b93-3934-4b25-8b54-abece41b97ee",
+      "id": "0f829203-a019-448b-8c35-cd1e7f4934ab",
       "name": "Stop and Error14"
     },
     {
@@ -1195,10 +1195,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5376,
-        5344
+        -11968,
+        9744
       ],
-      "id": "5506a48b-766e-4eba-b05b-1e5251d14cf2",
+      "id": "8c8f6a9c-51a9-40aa-94e1-774242767e29",
       "name": "Stop and Error15"
     },
     {
@@ -1208,10 +1208,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5152,
-        5248
+        -11744,
+        9648
       ],
-      "id": "5bc5e82b-6445-4f3f-b9c1-6d28eb4e3017",
+      "id": "36f986f1-8f83-4cad-b0cb-de0b6fa3a537",
       "name": "Stop and Error16"
     },
     {
@@ -1221,10 +1221,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -4928,
-        5152
+        -11520,
+        9552
       ],
-      "id": "061d8afb-78b7-41ef-b3da-7364e26f1e4b",
+      "id": "99f7a0ad-f913-4156-8234-44d22520d26f",
       "name": "Stop and Error17"
     },
     {
@@ -1234,10 +1234,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -4704,
-        4960
+        -11296,
+        9360
       ],
-      "id": "478a434d-d51e-411d-84fa-9b087aa67292",
+      "id": "1e4d02fb-dcef-4107-951d-a8b8f7f3de65",
       "name": "Stop and Error18"
     },
     {
@@ -1254,10 +1254,10 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -6720,
-        6912
+        -13312,
+        11312
       ],
-      "id": "898d4be9-c379-40b4-8b98-7fd99931225e",
+      "id": "e53a2cc7-9ccc-4564-950d-c346071ed953",
       "name": "Off-topic message to user1",
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -1280,10 +1280,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -7152,
-        6960
+        -13744,
+        11360
       ],
-      "id": "e4cce7ff-b59c-427d-83dc-eb5ece15cfe8",
+      "id": "0b395086-e11c-4948-b82e-0dba5c2ab0b3",
       "name": "Guardrail Fail reply to user agent1",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -1295,10 +1295,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6768,
-        7392
+        -13360,
+        11792
       ],
-      "id": "c912f229-4e06-478f-976e-9515a22f8a9c",
+      "id": "d3d501ed-f2e1-465c-a6e7-a9a6d3825150",
       "name": "Stop and Error"
     },
     {
@@ -1308,10 +1308,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6352,
-        6992
+        -12944,
+        11392
       ],
-      "id": "ad668237-a4ac-4b54-bdf9-17d76722e5d5",
+      "id": "b31abd9b-fe9d-4ac8-8c37-0a9fff565589",
       "name": "Stop and Error19"
     }
   ],
@@ -1385,7 +1385,12 @@
       "main": [
         [
           {
-            "node": "Epics creator",
+            "node": "Get Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get focus epic",
             "type": "main",
             "index": 0
           }

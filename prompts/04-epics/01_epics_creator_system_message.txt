@@ -50,5 +50,5 @@ Never present or invent an epic in this case. This case overrides the Conversati
    - first line: the marker EPIC_VALIDATED
    - then the final epic exactly as last presented (same Description, rules, how, measures)
    - then, after a blank line, ONE short sentence confirming the epic is validated and asking whether to move on to the next epic.
-   If every other epic in the overview has status "validated", this is the last one: keep the marker and the epic, but the final sentence says that all epics are now validated and asks whether the PO is ready to move on to the features.
+   If every other epic in the overview has status "validated", this is the last one: keep the marker and the epic, but the final sentence only says that all epics are now validated. It asks no question and does not mention what comes next.
    Write nothing else.
