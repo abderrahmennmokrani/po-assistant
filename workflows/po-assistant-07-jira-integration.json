@@ -965,7 +965,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT \n\tid as story_id,\n\ttitle as story_title,\n\tdescription as story_description,\n\tepic_jira_ticket_id as epic_jira_ticket_id,\n\tfeature_jira_ticket_id as feature_jira_ticket_id\n\tFROM stories \n\twhere project_id = $1 and status = 'validated'",
+        "query": "SELECT \n\tid as story_id,\n\ttitle as story_title,\n\tdescription as story_description,\n\tepic_jira_ticket_id as epic_jira_ticket_id,\n\tfeature_jira_ticket_id as feature_jira_ticket_id\n\tFROM stories \n\twhere project_id = $1 and status = 'validated' and jira_ticket_id IS NULL",
         "options": {
           "queryReplacement": "={{ $json.project_id }}"
         }

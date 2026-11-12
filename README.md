@@ -168,7 +168,7 @@ Agents were evaluated with n8n's Evaluation nodes, with datasets in `evals/`.
 - An epic or a feature cannot be reopened after its validation in the chat.
 - Silent inconsistencies are possible after a change (for example a renamed epic still cited under its old title elsewhere): the assistant does not detect them, the PO checks them.
 - Nothing is routed after `stories_completed`: a new message in the channel ends in the generic error (and an e-mail to the admin).
-- The Jira push is not waited for: if it fails, the PO is not told in Slack, only the admin gets the e-mail. Running the stories push twice creates duplicates (its query does not filter on `jira_ticket_id`, unlike the epics and features ones).
+- The Jira push is not waited for: if it fails, the PO is not told in Slack, only the admin gets the e-mail. Stories that already have a Jira ticket are not pushed again, but a story that failed halfway between the Jira creation and the database update is created twice if the push is run again.
 - Jira issue type ids are hard-coded in workflow 07; the Jira project must exist beforehand.
 - Stories can contain circular dependencies (A depends on B, B on A): the DoR asks to indicate dependencies, nothing checks them.
 - Only the Now epics are detailed and pushed to Jira.
@@ -185,6 +185,9 @@ V2: a quality loop on the stories (evaluator-optimizer: writer, reviewer, Defini
 Abderrahmen Mokrani, Senior Product Owner.
 
 ## Changelog
+
+### v1.2.1 (2026-11-12)
+- Workflow 07: the stories query now filters on `jira_ticket_id IS NULL` like the epics and features ones, so running the stories push again no longer creates duplicate tickets.
 
 ### v1.2.0 (2026-11-12) - V1 complete
 - Added workflow 06: Definition of Ready (proposed, or pasted by the PO, validated, published as a Confluence page and re-read before each feature), then the user stories of each feature, one feature at a time; status `stories_completed`.
