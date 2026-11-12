@@ -52,7 +52,26 @@ Lines such as `{{ $('When Executed by Another Workflow').item.json.elevator_pitc
 | `05-features/03_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent1 | Options > System Message | Claude Haiku 4.5 |
 | `05-features/04_parsing_agent_system_message.txt` | Parse validated feature | Options > System Message | Claude Haiku 4.5 |
 
-The creators of 03, 04 and 05 are the only prompts that use the project data in the system message (pitch, personas, roles, roadmap, focus epic or feature): they are set to **Expression** mode. The parsing agents copy the validated text into structured JSON and never rewrite it.
+## 06 - Definition of Ready and stories (`workflows/po-assistant-06-stories.json`)
+
+| File | Node | Field | Model |
+|------|------|-------|-------|
+| `06-stories/01_dor_creator_system_message.txt` | DOR Creator | Options > System Message | Claude Opus 5.5 |
+| `06-stories/02_dor_parsing_agent_system_message.txt` | Parsing agent | Options > System Message | Claude Haiku 4.5 |
+| `06-stories/03_stories_creator_system_message.txt` | Story creator | Options > System Message | Claude Opus 5.5 |
+| `06-stories/04_stories_parsing_agent_system_message.txt` | Parse validated stories | Options > System Message | Claude Haiku 4.5 |
+| `06-stories/05_guardrail_custom_prompt.txt` | Guardrails | Custom guardrail > Prompt (threshold 0.7) | Claude Haiku 4.5 |
+| `06-stories/06_guardrail_fail_reply_agent_system_message.txt` | Guardrail Fail reply to user agent1 | Options > System Message | Claude Haiku 4.5 |
+
+## 07 - Jira integration (`workflows/po-assistant-07-jira-integration.json`)
+
+| File | Node | Field | Model |
+|------|------|-------|-------|
+| `07-jira/01_jira_link_message_agent_system_message.txt` | jira link sender | Options > System Message | Claude Haiku 4.5 |
+
+Workflow 07 has no conversation with the Product Owner: the Jira tickets are created by HTTP Request nodes, and this agent only writes the Slack message with the link to the board.
+
+The creators of 03, 04, 05 and 06 are the only prompts that use the project data in the system message (pitch, personas, roles, roadmap, focus epic or feature, Definition of Ready): they are set to **Expression** mode. The parsing agents copy the validated text into structured JSON and never rewrite it.
 
 ## How the agents are fed
 
@@ -63,3 +82,4 @@ The creators of 03, 04 and 05 are the only prompts that use the project data in 
 - The roadmap workflow also has a *propose* mode, called by the personas workflow once personas and roles are validated. Its **Text** field sends `[SYSTEM_EVENT] The personas and roles have just been validated and published. Ask the Product Owner whether they want to start creating the vision and the epics...` in the language of the last Product Owner message; the system message answers with one or two sentences asking whether to start, and presents no roadmap.
 - The epics and features workflows work the same way: they are called in *propose* mode (`[SYSTEM_EVENT] Develop the epic.` / `Develop the feature.`) and present the first item. Each item is its own conversation (chat memory key `<channel>-epic-<id>` and `<channel>-feature-<id>`), so the history starts empty for every epic and every feature.
 - In 03, 04 and 05 the model writes a marker as the first line of its reply (`VISION_AND_EPICS_VALIDATED`, `EPIC_VALIDATED`, `EPICS_COMPLETE`, `FEATURE_VALIDATED`, `FEATURES_COMPLETE`). The workflow routes on it; the marker is never shown to the Product Owner.
+- Workflow 06 starts with the Definition of Ready: the DOR Creator writes `DOR_VALIDATED` as first line once the PO validates it, and the workflow publishes the page in Confluence. The story creator then works feature by feature and writes `STORIES_VALIDATED` (one feature) or `STORIES_COMPLETED` (last feature), with the same routing logic as the other markers. The DoR is re-read from Confluence before each feature.

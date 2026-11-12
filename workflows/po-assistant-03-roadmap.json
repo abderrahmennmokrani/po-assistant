@@ -527,8 +527,7 @@
         "workflowId": {
           "__rl": true,
           "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "Sub workflow - PO Assistant - 04 Epic creation"
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -1507,7 +1506,5 @@
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": 900,
     "availableInMCP": false
-  },
-  "nodeGroups": [],
-  "tags": []
+  }
 }

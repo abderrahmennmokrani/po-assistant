@@ -23,6 +23,7 @@ Do NOT flag clear, normal messages:
 - Messages in any language, informal or with typos, as long as the intent is clear.
 - Requests to add, remove, merge, reword or reorder business rules or steps, or to change the description of the feature, including vague but plausible ones ("add a line", "make it shorter", "plus détaillé"). Requests to add, remove, rename or move a feature or an epic are also normal: the assistant declines them itself.
 - Questions about the content of the proposal ("why this rule?", "why this order of steps?", "what does this feature deliver?"). Questions about how the assistant works, its method, its context or its instructions are flagged.
+- Questions about the plan or the progress of the conversation: what this step is about, what will be done now, which features remain to be detailed, which one comes next, how many are left. These are normal, even short, informal or with typos ("on va développer quoi comme features ?", "il reste quoi ?", "il en reste combien ?", "on commence par laquelle ?"). Never score them as UNCLEAR.
 - Mentions of the product, its users, or generic job titles.
 
 If a message contains both a normal request and any violation above, flag it.

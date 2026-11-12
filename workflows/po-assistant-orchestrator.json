@@ -133,49 +133,17 @@
         "workflowId": {
           "__rl": true,
           "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "Sub workflow - PO Assistant - 01 Elevator Pitch "
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {
-            "channel": "={{ $('Slack Trigger').item.json.channel }}",
-            "text": "={{ $('Slack Trigger').item.json.text }}"
-          },
+          "value": {},
           "matchingColumns": [
             "channel",
             "text",
             "expected_output_criteria"
           ],
-          "schema": [
-            {
-              "id": "channel",
-              "displayName": "channel",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "text",
-              "displayName": "text",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "expected_output_criteria",
-              "displayName": "expected_output_criteria",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "removed": true
-            }
-          ],
+          "schema": [],
           "attemptToConvertTypes": false,
           "convertFieldsToString": true
         },
@@ -184,8 +152,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -512,
-        -2128
+        -416,
+        -2208
       ],
       "name": "Sub workflow - PO Assistant - 01 Elevator Pitch",
       "id": "33d5a516-c066-4668-b9fd-4cb78eb89e80",
@@ -265,8 +233,7 @@
         "workflowId": {
           "__rl": true,
           "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "PO Assistant - 02 Personna and users creation"
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -391,6 +358,31 @@
               },
               "renameOutput": true,
               "outputKey": "features sub-workflow"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "81cf679c-d8b3-4127-84e1-0e4e39343410",
+                    "leftValue": "={{ $('Execute a SQL query').item.json.status }}",
+                    "rightValue": "features_completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Stories sub-workflow"
             }
           ]
         },
@@ -462,8 +454,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -288,
-        -1312
+        -192,
+        -1376
       ],
       "id": "f9f7a14f-14ca-417d-a88d-9f9c01156282",
       "name": "Edit Fields1",
@@ -544,8 +536,7 @@
         "workflowId": {
           "__rl": true,
           "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "Sub workflow - PO Assistant - 03 Road-map creation"
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -560,8 +551,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -64,
-        -1408
+        32,
+        -1472
       ],
       "id": "d1b72757-f75e-481e-9075-4810b593b8b2",
       "name": "Call 'Sub workflow - PO Assistant - 03 Road-map creation'",
@@ -591,8 +582,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -288,
-        -928
+        -128,
+        -976
       ],
       "id": "19c558f0-89a1-44d3-8117-0453c24ec8c6",
       "name": "Edit Fields2",
@@ -604,8 +595,7 @@
         "workflowId": {
           "__rl": true,
           "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "Sub workflow - PO Assistant - 04 Epic creation"
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -620,8 +610,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -64,
-        -1024
+        96,
+        -1072
       ],
       "id": "5a06269d-37d9-45aa-9b18-d10f7c513d66",
       "name": "Call 'Sub workflow - PO Assistant - 04 Epics creation",
@@ -651,7 +641,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -288,
+        -112,
         -544
       ],
       "id": "c8cbb365-6d18-41a9-928a-04afee8490fc",
@@ -664,8 +654,7 @@
         "workflowId": {
           "__rl": true,
           "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "Sub workflow - PO Assistant - 05 feature creation"
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -680,7 +669,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -64,
+        112,
         -640
       ],
       "id": "0fd1d9f8-9b28-4896-a75e-afd5ba462c92",
@@ -760,8 +749,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -288,
-        -736
+        -160,
+        272
       ],
       "id": "4d925691-678e-43a1-9e6e-8ad2a0fe7e39",
       "name": "Stop and Error5"
@@ -786,7 +775,7 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -64,
+        112,
         -448
       ],
       "id": "2c8201f4-8121-4fd8-b73b-b87e11c33eeb",
@@ -799,8 +788,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -64,
-        -832
+        96,
+        -880
       ],
       "id": "b373fef6-9441-4449-9dc1-5d198476a5b6",
       "name": "Stop and Error8"
@@ -812,8 +801,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -64,
-        -1216
+        32,
+        -1280
       ],
       "id": "4010472b-d72c-408f-9a39-7ff0af51bd8d",
       "name": "Stop and Error9"
@@ -825,8 +814,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        160,
-        -1408
+        256,
+        -1472
       ],
       "id": "b6ab86de-3ad3-42f7-8c84-539b0f444a63",
       "name": "Stop and Error10"
@@ -838,8 +827,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        160,
-        -1024
+        320,
+        -1072
       ],
       "id": "9d24ce2b-532e-447f-ab5e-365db5554712",
       "name": "Stop and Error11"
@@ -851,7 +840,7 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        160,
+        336,
         -640
       ],
       "id": "a18a98fd-9d41-4604-946a-4965460687a4",
@@ -947,6 +936,122 @@
       ],
       "id": "d4e24207-dd66-43ec-9db0-3d8bf81c97d5",
       "name": "Stop and Error19"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "893dc50d-e32b-4153-ac4d-27748b9448bb",
+              "name": "user_Input",
+              "value": "={{ $('Slack Trigger').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "99c1f46b-a916-46ab-ada4-2ea722c933ad",
+              "name": "channel_id",
+              "value": "={{ $('Execute a SQL query').item.json.channel_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -128,
+        -160
+      ],
+      "id": "b6dae7b8-5e66-4092-b28b-d3fd5acd7721",
+      "name": "Edit Fields4",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -64
+      ],
+      "id": "e69b3df6-8f8b-451c-bf43-2a11195290a2",
+      "name": "Stop and Error20"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -208
+      ],
+      "id": "6421584a-54e8-440b-836a-5f7f4cbde097",
+      "name": "Stop and Error21"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_SUBWORKFLOW_ID",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        -256
+      ],
+      "id": "747bb8c7-649b-467f-99ad-b2714efa577a",
+      "name": "Call 'Sub workflow - PO Assistant - 06 stories creation",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bef1d58c-ffc3-4b67-9d5f-97c20c4b4724",
+              "name": "text",
+              "value": "={{ $('Slack Trigger').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "d579fcd2-5e33-414a-ac93-791faf4c5cff",
+              "name": "channel",
+              "value": "={{ $('Slack Trigger').item.json.channel }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -592,
+        -2000
+      ],
+      "id": "5e1d39ef-da0d-48ac-8495-54c12084fa67",
+      "name": "Edit Fields5",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
     }
   ],
   "pinData": {},
@@ -997,7 +1102,7 @@
       "main": [
         [
           {
-            "node": "Sub workflow - PO Assistant - 01 Elevator Pitch",
+            "node": "Edit Fields5",
             "type": "main",
             "index": 0
           }
@@ -1149,14 +1254,21 @@
             "index": 0
           }
         ],
-        [],
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Stop and Error5",
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "Edit Fields1": {
@@ -1308,6 +1420,47 @@
           }
         ]
       ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Call 'Sub workflow - PO Assistant - 06 stories creation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Sub workflow - PO Assistant - 06 stories creation": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Sub workflow - PO Assistant - 01 Elevator Pitch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -1319,7 +1472,5 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
     "executionTimeout": 900
-  },
-  "nodeGroups": [],
-  "tags": []
+  }
 }

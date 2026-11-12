@@ -1,7 +1,7 @@
--- PO Assistant: Postgres schema (steps 1 to 5 + Slack event deduplication)
+-- PO Assistant: Postgres schema (steps 1 to 7 + Slack event deduplication)
 -- One channel = one project. channel_id is the Slack channel ID.
 -- projects.status moves forward: pitch_validated, personas_and_roles_validated,
--- road_map_validated, epics_completed, features_completed.
+-- road_map_validated, epics_completed, features_completed, stories_completed.
 -- The orchestrator routes each message on this status.
 -- Every table has created_at / updated_at (except processed_events).
 -- updated_at is maintained by the set_updated_at() trigger function (defined at the end of this file).
@@ -15,7 +15,9 @@ CREATE TABLE IF NOT EXISTS projects (
     channel_id            TEXT,
     created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
     confluence_space_key  TEXT,
-    updated_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+    dor_status            TEXT,   -- NULL until the Definition of Ready is validated, then 'validated'
+    dor_page_id           TEXT    -- id of the Confluence page that holds the DoR
 );
 
 -- Validated personas and roles, stored as JSON arrays (one row per validation).
@@ -67,6 +69,7 @@ CREATE TABLE IF NOT EXISTS epics (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     rules       TEXT[] NOT NULL DEFAULT '{}',
     measures    TEXT[] NOT NULL DEFAULT '{}',
+    jira_ticket_id TEXT,  -- Jira issue id, written by workflow 07 (NULL = not pushed yet)
     UNIQUE (roadmap_id, horizon, priority)
 );
 
@@ -84,10 +87,13 @@ CREATE TABLE IF NOT EXISTS features (
     status      TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'validated')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    steps       TEXT[] NOT NULL DEFAULT '{}'
+    steps       TEXT[] NOT NULL DEFAULT '{}',
+    jira_ticket_id      TEXT,  -- Jira issue id of the feature (workflow 07)
+    epic_jira_ticket_id TEXT   -- Jira issue id of its epic, so the feature can be created under it
 );
 
--- The steps of a validated feature are stored as draft user stories (developed by the next step).
+-- The steps of a validated feature are stored as draft user stories. Workflow 06 writes the
+-- statement and acceptance criteria of each story (in description) and sets it to 'validated'.
 CREATE TABLE IF NOT EXISTS stories (
     id          SERIAL PRIMARY KEY,
     project_id  INTEGER NOT NULL REFERENCES projects(id),
@@ -97,7 +103,10 @@ CREATE TABLE IF NOT EXISTS stories (
     description TEXT NOT NULL,
     status      TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'validated')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    jira_ticket_id         TEXT,  -- Jira issue id of the story (workflow 07)
+    feature_jira_ticket_id TEXT,  -- Jira issue id of its feature (story is linked to it)
+    epic_jira_ticket_id    TEXT   -- Jira issue id of its epic (story is created under it)
 );
 
 -- Slack event deduplication (Slack retries an event if it is not acknowledged fast enough).
@@ -147,3 +156,9 @@ CREATE TRIGGER stories_set_updated_at BEFORE UPDATE ON stories
 
 -- The chat memory table (default name n8n_chat_histories, session_id = Slack channel ID plus a suffix)
 -- is created and managed by n8n's Postgres Chat Memory node.
+
+-- Upgrading an existing database from v1.1.x (columns added in v1.2.0):
+-- ALTER TABLE projects ADD COLUMN IF NOT EXISTS dor_status TEXT, ADD COLUMN IF NOT EXISTS dor_page_id TEXT;
+-- ALTER TABLE epics    ADD COLUMN IF NOT EXISTS jira_ticket_id TEXT;
+-- ALTER TABLE features ADD COLUMN IF NOT EXISTS jira_ticket_id TEXT, ADD COLUMN IF NOT EXISTS epic_jira_ticket_id TEXT;
+-- ALTER TABLE stories  ADD COLUMN IF NOT EXISTS jira_ticket_id TEXT, ADD COLUMN IF NOT EXISTS feature_jira_ticket_id TEXT, ADD COLUMN IF NOT EXISTS epic_jira_ticket_id TEXT;

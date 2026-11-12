@@ -37,8 +37,7 @@
         "workflowId": {
           "__rl": true,
           "value": "YOUR_SUBWORKFLOW_ID",
-          "mode": "id",
-          "cachedResultName": "PO Assistant - 02 Personna and users creation"
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -419,7 +418,7 @@
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        352,
+        480,
         -1584
       ],
       "id": "6d37432a-6d57-4178-b140-80fd0dde7181",
@@ -458,7 +457,7 @@
       "credentials": {
         "httpBasicAuth": {
           "id": "YOUR_CREDENTIAL_ID",
-          "name": "Confluence"
+          "name": "Atlassian"
         }
       },
       "onError": "continueErrorOutput"
@@ -557,8 +556,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        400,
-        -1856
+        208,
+        -2064
       ],
       "id": "b6b26da8-ad3a-4438-8b74-96d561295af4",
       "name": "Anthropic Chat Model (judge)1",
@@ -574,8 +573,7 @@
         "dataTableId": {
           "__rl": true,
           "value": "YOUR_DATA_TABLE_ID",
-          "mode": "list",
-          "cachedResultName": "pitch creator eval dataset v11"
+          "mode": "id"
         },
         "outputs": {
           "values": [
@@ -589,8 +587,8 @@
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
       "position": [
-        64,
-        -2000
+        0,
+        -2272
       ],
       "id": "0180473e-961b-4b3b-9b52-61d9bf8846d4",
       "name": "Evaluation - Set outputs1"
@@ -606,8 +604,8 @@
       "type": "n8n-nodes-base.evaluation",
       "typeVersion": 4.8,
       "position": [
-        224,
-        -2032
+        160,
+        -2304
       ],
       "id": "bd97a49c-4be3-4d60-b9a7-4b20c4928bb0",
       "name": "Evaluation - Set metrics (LLM judge)1"
@@ -617,8 +615,7 @@
         "dataTableId": {
           "__rl": true,
           "value": "YOUR_DATA_TABLE_ID",
-          "mode": "list",
-          "cachedResultName": "pitch creator eval dataset v11"
+          "mode": "id"
         }
       },
       "type": "n8n-nodes-base.evaluationTrigger",
@@ -837,7 +834,7 @@
       "typeVersion": 1,
       "position": [
         864,
-        -1040
+        -1424
       ],
       "id": "ec7f53b0-c260-41ce-a9c5-6d97de10baff",
       "name": "Stop and Error6"
@@ -849,8 +846,8 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        448,
-        -1648
+        352,
+        -1136
       ],
       "id": "d7508d7f-93a5-47bd-aedc-76a84823bb3e",
       "name": "Stop and Error7"
@@ -1287,7 +1284,5 @@
     "saveExecutionProgress": true,
     "saveManualExecutions": true,
     "executionTimeout": 900
-  },
-  "nodeGroups": [],
-  "tags": []
+  }
 }

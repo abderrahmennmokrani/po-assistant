@@ -55,7 +55,5 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
-  },
-  "nodeGroups": [],
-  "tags": []
+  }
 }

@@ -1,0 +1,1831 @@
+{
+  "name": "Sub workflow - PO Assistant - 07 Jira integration",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -21072,
+        9152
+      ],
+      "id": "05b6cb69-7995-4ba2-b59f-77fa5ed845e5",
+      "name": "When Executed by Another Workflow",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -20752,
+        9232
+      ],
+      "id": "01e049bc-b345-4cb2-8d65-1a6881493996",
+      "name": "Stop and Error1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.project_status }}",
+                    "rightValue": "epics_completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "9bf2d554-ee37-4961-b316-5b471893ba9e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "epics integration"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ca24bf8f-a557-48af-b242-57f74c590cc2",
+                    "leftValue": "={{ $json.project_status }}",
+                    "rightValue": "features_completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "features integration"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "11207ba8-4391-441d-a1d6-b3d4ff88edb1",
+                    "leftValue": "={{ $json.project_status }}",
+                    "rightValue": "stories_completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "stories integration"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -20400,
+        8960
+      ],
+      "id": "8b09abdd-ff70-4562-9313-2a5dbc4d9d89",
+      "name": "Switch",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "epics",
+          "mode": "list",
+          "cachedResultName": "epics"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get epics infos').item.json.epic_id }}",
+            "jira_ticket_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "project_id",
+              "displayName": "project_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "roadmap_id",
+              "displayName": "roadmap_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "horizon",
+              "displayName": "horizon",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "rules",
+              "displayName": "rules",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "measures",
+              "displayName": "measures",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jira_ticket_id",
+              "displayName": "jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -19600,
+        8096
+      ],
+      "id": "22d3f0e6-f8ec-4662-896e-a3e670d005f1",
+      "name": "Update epics table",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "features",
+          "mode": "list",
+          "cachedResultName": "features"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "epic_id": "={{ $('Get epics infos').item.json.epic_id }}",
+            "epic_jira_ticket_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "epic_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "project_id",
+              "displayName": "project_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "epic_id",
+              "displayName": "epic_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "rules",
+              "displayName": "rules",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "steps",
+              "displayName": "steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jira_ticket_id",
+              "displayName": "jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "epic_jira_ticket_id",
+              "displayName": "epic_jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -19584,
+        8272
+      ],
+      "id": "30e0e106-a275-42c3-a635-5fdee9e7b7ed",
+      "name": "Update features table",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    id as project_id, \n    status as project_status,\n    jira_key as jira_key\nFROM projects \nwhere channel_id = $1",
+        "options": {
+          "queryReplacement": "={{ $json.channel}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -20624,
+        9056
+      ],
+      "id": "0d6fbd17-af6b-4ec1-a475-ce37d4aa6eee",
+      "name": "Get project infos",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    id as epic_id,\n\ttitle as epic_title,\n\tdescription,\n\trules,\n\tmeasures  \n\tFROM epics \n\twhere project_id = $1 and horizon ='Now' and jira_ticket_id IS NULL",
+        "options": {
+          "queryReplacement": "={{ $json.project_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -20144,
+        8384
+      ],
+      "id": "a6f886a2-720d-4815-9210-5bfcdb5c1242",
+      "name": "Get epics infos",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR-DOMAIN.atlassian.net/rest/api/3/issue",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const toArr = v => {\n    if (Array.isArray(v)) return v;\n    if (!v) return [];\n    try { return JSON.parse('[' + String(v).trim().replace(/^\\{/, '').replace(/\\}$/, '') + ']'); } catch (e) { return [String(v)]; }\n  };\n  const t = (text, b) => ({ type: 'text', text: text, ...(b ? { marks: [{ type: 'strong' }] } : {}) });\n  const p = (text) => ({ type: 'paragraph', content: [t(text)] });\n  const h = (text) => ({ type: 'heading', attrs: { level: 3 }, content: [t(text)] });\n  const ul = (items, bold) => ({\n    type: 'bulletList',\n    content: items.map(i => {\n      const k = bold ? String(i).indexOf(' — ') : -1;\n      const nodes = k > 0 ? [t(String(i).slice(0, k), true), t(String(i).slice(k))] : [t(String(i))];\n      return { type: 'listItem', content: [{ type: 'paragraph', content: nodes }] };\n    })\n  });\n  const desc = String($json.description ?? '').split('\\n').map(l => l.trim()).filter(Boolean).map(p);\n  const rules = toArr($json.rules);\n  const measures = toArr($json.measures);\n  const content = [\n    ...desc,\n    ...(rules.length ? [h('Règles métier'), ul(rules, false)] : []),\n    ...(measures.length ? [h('Mesures de succès'), ul(measures, true)] : [])\n  ];\n  return {\n    fields: {\n      project: { key: $('Get project infos').item.json.jira_key },\n      issuetype: { name: 'Epic' },\n      summary: $json.epic_title,\n      description: { type: 'doc', version: 1, content: content }\n    }\n  };\n})() }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -19920,
+        8384
+      ],
+      "id": "372cfe5d-9891-4e68-88c1-741376d05f1e",
+      "name": "insert epics in jira",
+      "retryOnFail": true,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Atlassian"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "features",
+          "mode": "list",
+          "cachedResultName": "features"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get features infos').item.json.feature_id }}",
+            "jira_ticket_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "project_id",
+              "displayName": "project_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "epic_id",
+              "displayName": "epic_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "rules",
+              "displayName": "rules",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "steps",
+              "displayName": "steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jira_ticket_id",
+              "displayName": "jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "epic_jira_ticket_id",
+              "displayName": "epic_jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -19280,
+        8640
+      ],
+      "id": "aa31069e-0563-45fd-9e47-013e9b7b6cde",
+      "name": "Update features table1",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "stories",
+          "mode": "list",
+          "cachedResultName": "stories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "feature_id": "={{ $('Get features infos').item.json.feature_id }}",
+            "feature_jira_ticket_id": "={{ $json.id }}",
+            "epic_jira_ticket_id": "={{ $('Get features infos').item.json.epic_jira_ticket_id }}"
+          },
+          "matchingColumns": [
+            "feature_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "project_id",
+              "displayName": "project_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "epic_id",
+              "displayName": "epic_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "feature_id",
+              "displayName": "feature_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jira_ticket_id",
+              "displayName": "jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "feature_jira_ticket_id",
+              "displayName": "feature_jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "epic_jira_ticket_id",
+              "displayName": "epic_jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -19248,
+        8896
+      ],
+      "id": "4631350a-ee1e-4824-90f1-0b016bfef27e",
+      "name": "Update stories table1",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n\tid as feature_id,\n\ttitle as feature_title,\n\tdescription as feature_description,\n\trules as feature_rules,\n\tepic_jira_ticket_id as epic_jira_ticket_id,\n\tsteps as feature_steps\n\tFROM features \n\twhere project_id = $1 and status = 'validated' and jira_ticket_id IS NULL",
+        "options": {
+          "queryReplacement": "={{ $json.project_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -20000,
+        8928
+      ],
+      "id": "d978204b-68ce-4ad9-8cd2-c9edd8624dcf",
+      "name": "Get features infos",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR-DOMAIN.atlassian.net/rest/api/3/issue",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const para = t => ({ type: 'paragraph', content: [{ type: 'text', text: String(t) }] });\n  const heading = t => ({ type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: t }] });\n  const list = a => ({ type: 'bulletList', content: a.map(i => ({ type: 'listItem', content: [para(i)] })) });\n  const step = s => { let o = s; if (typeof s === 'string') { try { o = JSON.parse(s); } catch (e) { return s; } } return o && o.title ? o.title + (o.description ? ' : ' + o.description : '') : JSON.stringify(o); };\n  const rule = r => typeof r === 'string' ? r : JSON.stringify(r);\n  const rules = ($json.feature_rules ?? []).map(rule).filter(x => x.trim());\n  const steps = ($json.feature_steps ?? []).map(step).filter(x => x.trim());\n  const content = String($json.feature_description ?? '').split('\\n').filter(l => l.trim()).map(l => para(l));\n  if (rules.length) content.push(heading('Règles métier'), list(rules));\n  if (steps.length) content.push(heading('Étapes'), list(steps));\n  return {\n    fields: {\n      project: { key: $('Get project infos').first().json.jira_key },\n      issuetype: { id: '10156' },\n      summary: $json.feature_title,\n      parent: { id: $json.epic_jira_ticket_id },\n      description: { type: 'doc', version: 1, content: content }\n    }\n  };\n})() }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -19664,
+        8816
+      ],
+      "id": "7bb07061-bd38-4793-b6c7-ce39546e9db3",
+      "name": "insert features in jira",
+      "retryOnFail": true,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Atlassian"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n\tid as story_id,\n\ttitle as story_title,\n\tdescription as story_description,\n\tepic_jira_ticket_id as epic_jira_ticket_id,\n\tfeature_jira_ticket_id as feature_jira_ticket_id\n\tFROM stories \n\twhere project_id = $1 and status = 'validated'",
+        "options": {
+          "queryReplacement": "={{ $json.project_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -19760,
+        9344
+      ],
+      "id": "55369c2c-b7e3-4142-807d-438ae4e2a323",
+      "name": "Get stories infos",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR-DOMAIN.atlassian.net/rest/api/3/issue",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => {\n  const p = (t, b) => ({ type: 'paragraph', content: [{ type: 'text', text: t, ...(b ? { marks: [{ type: 'strong' }] } : {}) }] });\n  const isB = l => /^([-*•]\\s|Étant donné|Given)/i.test(l);\n  const lines = String($json.story_description ?? '').split('\\n').flatMap(l => l.split(/,(?=\\s*Étant donné)/i)).map(l => l.replace(/\\*\\*/g, '').trim()).filter(Boolean);\n  const content = lines.reduce((a, l) => {\n    const last = a[a.length - 1];\n    if (isB(l)) {\n      const item = { type: 'listItem', content: [p(l.replace(/^[-*•]\\s+/, ''))] };\n      if (last && last.type === 'bulletList') { last.content.push(item); } else { a.push({ type: 'bulletList', content: [item] }); }\n    } else { a.push(p(l, /^(crit[èe]res|acceptance)/i.test(l))); }\n    return a;\n  }, []);\n  return {\n    fields: {\n      project: { key: $('Get project infos').first().json.jira_key },\n      issuetype: { id: '10119' },\n      summary: $json.story_title,\n      parent: { id: $json.epic_jira_ticket_id },\n      description: { type: 'doc', version: 1, content: content }\n    },\n    update: { issuelinks: [ { add: { type: { name: 'Relates' }, outwardIssue: { id: $json.feature_jira_ticket_id } } } ] }\n  };\n})() }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 3000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -19440,
+        9312
+      ],
+      "id": "332f24e6-bc8d-4fc4-829d-c620d725a64b",
+      "name": "insert stories in jira",
+      "retryOnFail": true,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Atlassian"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        -18448,
+        9248
+      ],
+      "id": "6b53b64c-6893-46ca-9bab-2e903e40eabc",
+      "name": "Haiku - Guardrails",
+      "credentials": {
+        "anthropicApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('When Executed by Another Workflow').first().json.channel}}",
+          "mode": "id"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        -18112,
+        8928
+      ],
+      "id": "edb98ddd-5202-4485-9655-8b057e1fd58a",
+      "name": "Off-topic message to user1",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR-DOMAIN.atlassian.net/rest/agile/1.0/board",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "projectKeyOrId",
+              "value": "={{ $('Get project infos').first().json.jira_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -18848,
+        9152
+      ],
+      "id": "c4f500e6-5a57-4881-810d-9ab3dc5b4151",
+      "name": "HTTP Request",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Atlassian"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Jira link: https://YOUR-DOMAIN.atlassian.net/jira/software/projects/{{ $('Get project infos').first().json.jira_key }}/boards/{{ $('HTTP Request').first().json.values[0].id }}/backlog\nproject language: \"{{ $('Update stories table2').item.json.title }}\"",
+        "options": {
+          "systemMessage": "=You are the PO Assistant. Write one short plain-text Slack message to the Product Owner. Say that all the tickets (epics, features and stories) have been created and that the project is now available in Jira, and give the link. Write in the language of the project. In French, use the formal \"vous\". No title, no heading, no markdown, no greeting, no emoji, no question. Output only the message text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -18432,
+        9072
+      ],
+      "id": "7d912680-1cdc-4d33-ae1f-a732eda1e1bd",
+      "name": "jira link sender",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "stories",
+          "mode": "list",
+          "cachedResultName": "stories"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "jira_ticket_id": "={{ $json.id }}",
+            "id": "={{ $('Get stories infos').item.json.story_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "project_id",
+              "displayName": "project_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "epic_id",
+              "displayName": "epic_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "feature_id",
+              "displayName": "feature_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jira_ticket_id",
+              "displayName": "jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "feature_jira_ticket_id",
+              "displayName": "feature_jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "epic_jira_ticket_id",
+              "displayName": "epic_jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -19136,
+        9184
+      ],
+      "id": "e396248c-f982-449a-b35f-757fbf10fb2f",
+      "name": "Update stories table2",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -20352,
+        9312
+      ],
+      "id": "24dc9b79-a9d0-4f0d-8f94-581cc9f997ba",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -20176,
+        9184
+      ],
+      "id": "8305b520-5702-44be-aefc-250eabb26b48",
+      "name": "Stop and Error2"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -19936,
+        8560
+      ],
+      "id": "1c1f6acb-ca57-4c0e-b999-58d2638d3adb",
+      "name": "Stop and Error3"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -19632,
+        8560
+      ],
+      "id": "c7d6d42d-306c-495e-a32c-a6372a0566de",
+      "name": "Stop and Error4"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -19264,
+        8128
+      ],
+      "id": "e8c38c35-e1ff-4284-bc89-d89b3cb7d0ff",
+      "name": "Stop and Error5"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -18912,
+        8304
+      ],
+      "id": "1ad3ffa2-b815-49fb-a0cd-f2d348d064ef",
+      "name": "Stop and Error6"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -19744,
+        9072
+      ],
+      "id": "d66113b4-6176-4ba4-8a2b-a12f91e71e1b",
+      "name": "Stop and Error7"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -19440,
+        9024
+      ],
+      "id": "096c5c3e-eb30-4577-999a-d950dd787692",
+      "name": "Stop and Error8"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -18992,
+        8624
+      ],
+      "id": "df74022a-641e-448f-865f-ffabe6e5b65c",
+      "name": "Stop and Error9"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -18960,
+        8928
+      ],
+      "id": "16410bfb-edd4-4d1a-946f-cb4803e57050",
+      "name": "Stop and Error10"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -19488,
+        9552
+      ],
+      "id": "146eb36a-5bb5-4fc6-9e1b-47e449bb9995",
+      "name": "Stop and Error11"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -19248,
+        9504
+      ],
+      "id": "b8d55d46-81f5-4b84-b0df-2e88fe8db2fe",
+      "name": "Stop and Error12"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -18864,
+        9392
+      ],
+      "id": "c8da2c78-d6c1-4b28-b6b8-4e9f0127ff68",
+      "name": "Stop and Error13"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -18608,
+        9232
+      ],
+      "id": "e4a61752-7d57-4f12-8856-9c0e3460eae5",
+      "name": "Stop and Error14"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -18048,
+        9200
+      ],
+      "id": "d1d284cf-90d4-4b75-a24c-6b87e3a914ef",
+      "name": "Stop and Error15"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -17856,
+        8992
+      ],
+      "id": "6e30eb80-e834-4c9d-b347-7af632f55714",
+      "name": "Stop and Error16"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get project infos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get epics infos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get features infos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get stories infos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get project infos": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get epics infos": {
+      "main": [
+        [
+          {
+            "node": "insert epics in jira",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert epics in jira": {
+      "main": [
+        [
+          {
+            "node": "Update epics table",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update features table",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get features infos": {
+      "main": [
+        [
+          {
+            "node": "insert features in jira",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert features in jira": {
+      "main": [
+        [
+          {
+            "node": "Update features table1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update stories table1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get stories infos": {
+      "main": [
+        [
+          {
+            "node": "insert stories in jira",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert stories in jira": {
+      "main": [
+        [
+          {
+            "node": "Update stories table2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Haiku - Guardrails": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "jira link sender",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "jira link sender",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "jira link sender": {
+      "main": [
+        [
+          {
+            "node": "Off-topic message to user1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update stories table2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update epics table": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update features table": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update features table1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update stories table1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Off-topic message to user1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "executionTimeout": 900
+  }
+}
