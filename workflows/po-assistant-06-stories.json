@@ -1647,7 +1647,7 @@
           "value": {
             "id": "={{ $json.story_id }}",
             "title": "={{ $json.title }}",
-            "description": "=User voice : \n{{ $json.statement }}\n\nAcceptence criteria :\n{{ $json.acceptance_criteria }}",
+            "description": "={{ $json.description }}",
             "status": "validated"
           },
           "matchingColumns": [
@@ -1794,8 +1794,7 @@
       ],
       "id": "3c230a58-aac9-4b78-946d-82a81383f90b",
       "name": "Call 'Sub workflow - PO Assistant - 07 Jira integration'",
-      "retryOnFail": true,
-      "onError": "continueErrorOutput"
+      "retryOnFail": true
     },
     {
       "parameters": {
@@ -1861,19 +1860,6 @@
       ],
       "id": "d882287f-3951-4f92-b4c2-d594cdaac60b",
       "name": "Stop and Error6"
-    },
-    {
-      "parameters": {
-        "errorMessage": "An error occured"
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        -11936,
-        6928
-      ],
-      "id": "ca94826e-2dcf-45cb-975b-b4850513089e",
-      "name": "Stop and Error27"
     }
   ],
   "pinData": {},
@@ -2531,13 +2517,7 @@
     "Call 'Sub workflow - PO Assistant - 07 Jira integration'": {
       "main": [
         [],
-        [
-          {
-            "node": "Stop and Error27",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     }
   },

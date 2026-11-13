@@ -143,6 +143,7 @@ Import the nine files from `workflows/`. They are exported inactive and without 
 | "An unexpected error occurred" in Slack | Open the failed execution from the admin e-mail. Typical causes: expired Atlassian token, wrong Confluence space key, database unreachable. |
 | Confluence error after a validation | A page with the same title already exists in that space. |
 | Message after the stories are validated gives an error | Expected: nothing is routed after `stories_completed` (the orchestrator's fallback output ends in the generic error). |
+| Workflow 07 starts but ends in a few milliseconds, nothing is created in Jira, its trigger shows no `channel` | On the *Execute Workflow* node that calls 07 (in 04, 05 and 06), keep *On Error* on **Stop Workflow**. With *continue (using error output)* the data was not passed to the sub-workflow in the author's tests (n8n 2.40.7). Re-creating the node also fixed it for a similar case reported on the n8n forum. |
 | Jira shows duplicated tickets, or the stories branch of workflow 07 returns far more items than there are stories | *Execute Once* must stay ON in workflow 07 on *Get project infos* and *HTTP Request* (board lookup). Check that the setting was saved (workflow history) and keep a single editor tab open. |
 | Jira returns a 400 on issue creation | The issue type ids of workflow 07 do not match your Jira project, or the Jira key does not exist. |
 | A manual *Execute step* gives a different result from a real run | Manual runs use pinned data, production runs ignore it. Unpin the Slack Trigger and the trigger of workflow 07. |
@@ -185,6 +186,10 @@ V2: a quality loop on the stories (evaluator-optimizer: writer, reviewer, Defini
 Abderrahmen Mokrani, Senior Product Owner.
 
 ## Changelog
+
+### v1.2.2 (2026-11-12)
+- Workflow 06: the call to workflow 07 no longer uses *On Error: continue (using error output)*. With that setting, workflow 07 was started but received an empty trigger and ended after a few milliseconds without creating any Jira ticket (observed on n8n 2.40.7; not documented by n8n). The call now stops the workflow on error, like in 04 and 05.
+- Workflow 06: *Save validated stories* now stores the parsed `description` (it still read the old `statement` and `acceptance_criteria` fields, so validated stories were saved with an empty description).
 
 ### v1.2.1 (2026-11-12)
 - Workflow 07: the stories query now filters on `jira_ticket_id IS NULL` like the epics and features ones, so running the stories push again no longer creates duplicate tickets.
