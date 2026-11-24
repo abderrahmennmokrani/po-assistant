@@ -4,7 +4,17 @@ An AI pipeline built with **n8n** and **Claude** that helps a Product Owner turn
 
 You talk to the assistant in Slack. It drafts, you correct, you validate explicitly. Validated results are saved in **Postgres** (source of truth), published to **Confluence** (pitch, personas and roles, Definition of Ready) and pushed to **Jira** (epics, features, stories). One Slack channel = one project.
 
-> **Status: V1 complete.** The full chain is built and tested end to end in Slack: elevator pitch, personas and roles, roadmap, epics, features, Definition of Ready, user stories, then the push of the epics, features and stories to Jira. Next (V2): a quality loop on the stories.
+> **Status: V1.3, complete and tested end to end.** From a one-line idea to tickets in the Jira backlog, all in a Slack conversation: elevator pitch, personas and roles, roadmap, epics, features, Definition of Ready, user stories, Jira push. Validated epics, features and story sets can still be reopened and changed in the same conversation. Next (V2): a quality loop on the stories.
+
+## Highlights
+
+- **Nine chained n8n workflows, one Slack channel per project.** An orchestrator routes each message on the project status stored in Postgres, then the sub-workflows (pitch, personas and roles, roadmap, epics, features, Definition of Ready and stories, Jira push) and an error-alert workflow do the work.
+- **The whole product-discovery chain, not a single prompt.** The validated output of each step is the input of the next one, down to Jira tickets: epics, features under their epic, stories linked to their feature.
+- **The Product Owner stays in control.** Nothing is saved without an explicit validation, and a validated epic, feature or set of stories can be reopened and modified later: add, remove, rename, rewrite a rule. The change is written in one atomic SQL statement.
+- **Agents that read the database themselves.** During a modification, the Opus agents call read tools on Postgres to look at the other epics, features and stories before answering, so boundaries and cross-references stay consistent.
+- **A Definition of Ready owned by the team.** It lives in a Confluence page that the stories agent re-reads before each feature.
+- **Production-grade plumbing.** Slack event deduplication, retries and an error output on every node, an error workflow that emails the admin, guardrails on every conversational step, and a status that only moves forward when everything before it succeeded.
+- **Validated by real runs.** A complete scenario (a shared shopping list app) went from the idea to the Jira backlog, including modifications at the epic, feature and story levels, with the database checked at each step.
 
 ## What problem it solves
 
@@ -22,10 +32,10 @@ A Product Owner spends a lot of time producing the same framing documents for ev
 8. Right after the personas and roles are validated, the bot asks whether you want to start the roadmap. Answer yes and it generates a **vision**, an **objective**, a **journey**, **assumptions** and a short list of **epics** grouped in Now / Next / Later (title and brief description).
 9. You negotiate it freely in the conversation (change an epic's horizon, add or remove an epic, ask a question) until you validate once, explicitly.
 10. On validation, the roadmap is saved in Postgres (one row for the vision, objective, journey and assumptions, one row per epic with its horizon and its priority inside the horizon) and the project status becomes `road_map_validated`.
-11. The epics of the Now horizon are then developed one at a time: description, business rules, functional building blocks ("how") with a priority, and success measures. You correct, then validate each epic, which is saved as soon as you validate it. When the last one is validated, the status becomes `epics_completed`.
-12. The features of the Now epics (the building blocks of step 11) are then developed one at a time: description, business rules and steps (one step = one future user story). You correct, then validate each feature. After each validation the bot asks for the next feature; after the last one, the status becomes `features_completed`.
+11. The epics of the Now horizon are then developed one at a time: description, business rules, functional building blocks ("how") with a priority, and success measures. You correct, then validate each epic, which is saved as soon as you validate it. When the last one is validated, the status becomes `epics_completed`. You can come back to a validated epic and change it (new feature, new rule, rewritten title); if a value is missing, the assistant asks one short question instead of choosing it for you.
+12. The features of the Now epics (the building blocks of step 11) are then developed one at a time: description, business rules and steps (one step = one future user story). You correct, then validate each feature. After each validation the bot asks for the next feature; after the last one, the status becomes `features_completed`. A validated feature can be reopened and changed the same way.
 13. The bot then sets up the **Definition of Ready (DoR)**, the rules every story must respect. It asks whether you already have one. If not, it proposes a short DoR from the project context and you correct and validate it; if yes, you paste it and the bot formats it (you can change it or use it as is). The validated DoR is published as a Confluence page, which the team can edit later: the stories always read the current page.
-14. The user stories of each feature are then written one feature at a time: for each step of the feature, a statement ("As a... I want... so that...") and acceptance criteria that follow your DoR. You correct, then validate. After the last feature, the status becomes `stories_completed`.
+14. The user stories of each feature are then written one feature at a time: for each step of the feature, a statement ("As a... I want... so that...") and acceptance criteria that follow your DoR. You correct, then validate. After the last feature, the status becomes `stories_completed`. The stories of a validated feature can be modified (add, remove, rewrite) in the same conversation.
 15. **Workflow 07** pushes the validated items to Jira at the end of each phase: the Now epics when the epics are done, the features under their epic when the features are done, the stories under their epic (linked to their feature) when the stories are done. At the very end, an agent posts the link to the Jira board in the channel, in your language.
 
 You can write in any language; the assistant answers in yours.
@@ -66,7 +76,11 @@ The project `status` column is updated last, so it only moves forward if everyth
 - **A DoR that belongs to the team.** The Definition of Ready lives in a Confluence page, not in the prompt. Before each feature the stories agent reads the page again, so a change made by the team in Confluence applies to the next stories without touching the assistant.
 - **Jira push by level, with ids stored.** Workflow 07 reads the project status to know which level to push. Epics and features are selected only while their `jira_ticket_id` is empty; the Jira id returned for an epic is stored on the epic and on its features, the id of a feature on its stories, so each level can be created under or linked to the previous one. Stories are created one per 3 seconds to stay under Jira's rate limit.
 - **Status set before the closing message.** When the last epic (or feature) is validated, the project status is updated before the closing question is sent, so the PO's next message is routed by the orchestrator straight to the next step.
-- **The PO owns the consistency.** The assistant applies the requested change in the current item and does not try to detect the impact on the others.
+- **Modification after validation, with read tools and an atomic sync.** In 04, 05 and 06 the agent has Postgres read tools (`read_epics`, `read_epic_features`, `read_features`, `read_feature_stories`, `list_stories`). When the PO changes a validated item, the agent reads what it needs and applies the change; the new set is written by one SQL statement that updates existing rows by id, inserts the new ones and deletes the removed ones, so a modification never leaves a half-written state. Existing stories keep their priority.
+- **Missing values are asked, not invented.** In a modification the agent never picks a limit, a duration or a threshold on its own: it asks one short question. The "(proposé)" / "(à valider)" convention only applies when an item is first created.
+- **Clean chat memory.** After each turn, a cleanup node removes the tool-call turns from the Postgres chat memory, and one memory per phase (`<channel>-epics`, `-features`, `-stories`) keeps the conversation context.
+- **Same ordering everywhere.** The focus item and the next item are chosen with the same ordering (epic, then item), so a feature added later to an earlier epic is still presented in the right place.
+- **The PO owns the consistency.** The assistant applies the requested change and does not rewrite the other items on its own.
 - **Error handling everywhere.** Every node retries, then routes to an error output: the user gets a Slack message, then *Stop and Error* marks the execution as failed so the global Error Workflow emails the admin with the workflow name and an execution link.
 
 ## Repository layout
@@ -84,7 +98,7 @@ evals/       evaluation datasets
 
 | What | Notes |
 |------|-------|
-| n8n, self-hosted | Tested on 2.40.7. A public HTTPS URL is required because Slack calls your n8n webhook. |
+| n8n, self-hosted | Tested on 2.48.8. A public HTTPS URL is required because Slack calls your n8n webhook. |
 | Postgres | Tested on 17. |
 | Anthropic API key | Models used: Sonnet 5.5, Opus 5.5 (roadmap, epics, features, DoR, stories), Haiku 4.5 (Opus 4.8 only as LLM judge in the evaluation). |
 | Slack workspace | Where you can create an app. |
@@ -94,7 +108,7 @@ evals/       evaluation datasets
 
 ### 1. Create the database tables
 
-Run `sql/schema.sql`. It creates `projects`, `personas`, `roles`, `roadmaps`, `epics`, `features`, `stories` and `processed_events` (Slack event deduplication). The file ends with the `ALTER TABLE` statements to upgrade a database created with v1.1.x.
+Run `sql/schema.sql`. It creates `projects`, `personas`, `roles`, `roadmaps`, `epics`, `features`, `stories` and `processed_events` (Slack event deduplication). The file ends with the `ALTER TABLE` statements to upgrade a database created with v1.1.x or v1.2.x.
 
 The chat memory (one conversation per Slack channel) is stored by n8n's Postgres Chat Memory node in its own history table, created automatically.
 
@@ -158,7 +172,7 @@ Agents were evaluated with n8n's Evaluation nodes, with datasets in `evals/`.
 - **Elevator pitch:** 17 test cases (happy path, vague ideas, jargon, typos, English, onboarding, guardrails), scored by an LLM judge from 1 to 5, averaging about 4.1.
 - **Guardrail reply agent:** a dataset covering injections, secrets, abusive content and several languages, checked for language match and for not leaking the reason for the block.
 - **Roadmap, epics, features, DoR and stories:** no n8n evaluation (each generation costs real money with Opus). The prompts were iterated on fictional test projects (digital, data and AI) and checked by hand, then validated in real Slack runs from the pitch to the Jira push, with the database checked after each step.
-- **End to end:** real Slack runs on test projects validated the validation and language rules.
+- **End to end (v1.3):** a complete run on a fresh channel (a shared shopping list app), from the idea to the Jira backlog. It covered the modification of validated epics (add a feature, add a rule, rename), of validated features and of validated story sets (add, remove, change a criterion, missing-value question). Final checks in the database: project in `stories_completed`, Definition of Ready validated, every story `validated`, no leftover tool turn in the chat memory, tickets created in Jira.
 
 ## Known limitations
 
@@ -166,8 +180,8 @@ Agents were evaluated with n8n's Evaluation nodes, with datasets in `evals/`.
 - Confluence refuses two pages with the same title in a space, so retrying a validation after a late failure ends in an error message (pitch, personas and roles).
 - The database and the Confluence page are written in parallel: if Confluence fails after the database insert, the data is saved but the user gets an error.
 - A project can have only one roadmap; there is no way to start over from Slack.
-- An epic or a feature cannot be reopened after its validation in the chat.
-- Silent inconsistencies are possible after a change (for example a renamed epic still cited under its old title elsewhere): the assistant does not detect them, the PO checks them.
+- Modifications are possible until the Jira push of the level; once a ticket exists, changing it in the chat does not update Jira.
+- After a change the assistant does not rewrite the other items: a renamed epic can still be cited under its old title elsewhere, and changing the stories of a validated feature does not rewrite that feature's description. The PO checks the consistency.
 - Nothing is routed after `stories_completed`: a new message in the channel ends in the generic error (and an e-mail to the admin).
 - The Jira push is not waited for: if it fails, the PO is not told in Slack, only the admin gets the e-mail. Stories that already have a Jira ticket are not pushed again, but a story that failed halfway between the Jira creation and the database update is created twice if the push is run again.
 - Jira issue type ids are hard-coded in workflow 07; the Jira project must exist beforehand.
@@ -179,13 +193,23 @@ Agents were evaluated with n8n's Evaluation nodes, with datasets in `evals/`.
 
 ## Roadmap
 
-V2: a quality loop on the stories (evaluator-optimizer: writer, reviewer, Definition of Ready checker, at most two loops before handing over to the PO), a dependency check between stories, a Definition of Done.
+V2: a quality loop on the stories (evaluator-optimizer: writer, reviewer, Definition of Ready checker, at most two loops before handing over to the PO), a dependency check between stories, a Definition of Done, changing the priority of existing stories, updating Jira tickets after a late modification.
 
 ## Author
 
 Abderrahmen Mokrani, Senior Product Owner.
 
 ## Changelog
+
+### v1.3.0 (2026-11-24)
+- Workflows 04, 05 and 06: validated epics, features and story sets can be modified in the conversation. New Postgres read tools for the agents (`read_epics`, `read_epic_features`, `read_features`, `read_feature_stories`, `list_stories`) and an atomic *Sync* statement that updates, inserts and deletes in one query.
+- Workflows 04, 05 and 06: the agent asks one short question when a value is missing in a modification instead of choosing it; it no longer comments on, corrects or retracts its own earlier messages.
+- Workflows 04, 05 and 06: a cleanup node removes tool-call turns from the Postgres chat memory after each turn; one chat memory per phase (`<channel>-epics`, `-features`, `-stories`).
+- Workflow 05: the focus feature and the next feature use the same ordering (epic id, feature id), so a feature added later to an earlier epic is no longer mismatched. A value marked "(proposé)" in the epic keeps that mark in the feature.
+- Workflow 06: the next feature is read by a node named *Get next feature*, as referenced by the Story creator prompt.
+- Prompts of 02, 03, 04, 05 and 06 updated to the exported workflows; prompt README updated (markers, memory keys, modification mode).
+- Schema aligned with the database used in the end-to-end test: `priority` is a text label (`Highest` to `Lowest`) on epics, features and stories (`stories.priority` is new); the unused columns `epics.rules`, `epics.measures`, `features.rules`, `features.steps` and `roadmaps.epics` are removed. Upgrade statements for v1.2.x databases are at the end of `sql/schema.sql`.
+- Tested end to end on n8n 2.48.8.
 
 ### v1.2.2 (2026-11-12)
 - Workflow 06: the call to workflow 07 no longer uses *On Error: continue (using error output)*. With that setting, workflow 07 was started but received an empty trigger and ended after a few milliseconds without creating any Jira ticket (observed on n8n 2.40.7; not documented by n8n). The call now stops the workflow on error, like in 04 and 05.

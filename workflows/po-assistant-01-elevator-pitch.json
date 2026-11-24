@@ -174,7 +174,9 @@
           "mode": "id"
         },
         "text": "={{ $json.output }}",
-        "otherOptions": {}
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
@@ -413,7 +415,9 @@
           "mode": "id"
         },
         "text": "={{$json.output}}",
-        "otherOptions": {}
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
@@ -471,7 +475,9 @@
           "mode": "id"
         },
         "text": "=Pitch added to the confluence space of the project you can check it via this url {{ $json._links.base }}{{ $json._links.webui }}",
-        "otherOptions": {}
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,

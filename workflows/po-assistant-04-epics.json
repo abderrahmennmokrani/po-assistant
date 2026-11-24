@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.2,
       "position": [
-        -21296,
-        13744
+        -34272,
+        22528
       ],
-      "id": "4e8b986e-f870-452e-b484-b8c0f3cc6285",
+      "id": "964e5fa7-ba69-42c5-9d17-4560ea2b915a",
       "name": "When Executed by Another Workflow",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -34,10 +34,10 @@
       "type": "@n8n/n8n-nodes-langchain.guardrails",
       "typeVersion": 2,
       "position": [
-        -20848,
-        14064
+        -33824,
+        22848
       ],
-      "id": "e83e3d46-9572-4d2b-a4ed-6c2f8e48f6fa",
+      "id": "20aab57b-a8dd-46d8-856b-f67718959b17",
       "name": "Guardrails",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -55,10 +55,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -20704,
-        14624
+        -33680,
+        23408
       ],
-      "id": "b6c197a4-7f73-4848-8bc7-30ccf97ca7a1",
+      "id": "1e2fb459-aea7-463a-98df-a8885baed206",
       "name": "Haiku - Guardrails",
       "credentials": {
         "anthropicApi": {
@@ -94,10 +94,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -21072,
-        13616
+        -34048,
+        22400
       ],
-      "id": "a2a86562-f1f5-4fca-b43f-b36520475912",
+      "id": "f1a3ef78-9d21-4a63-8568-105faa606a9b",
       "name": "If propose mode",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -105,15 +105,15 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "=={{ $('When Executed by Another Workflow').item.json.channel_id }}-epic-{{ $('Get focus epic').isExecuted ? ($('Get focus epic').first().json.focus_epic_id ?? 'done') : 'start' }}"
+        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.channel_id }}-epics"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.4,
       "position": [
-        -19920,
-        13568
+        -32896,
+        22352
       ],
-      "id": "77658ba0-0eb8-4a4b-93b6-ae10346c577b",
+      "id": "d54006a1-a996-4651-bc20-343d828f1ac1",
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
@@ -131,16 +131,17 @@
           "cachedResultName": "Claude Opus 5.5"
         },
         "options": {
-          "maxTokensToSample": 21000
+          "maxTokensToSample": 21000,
+          "thinkingMode": "adaptive"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -20048,
-        13568
+        -33024,
+        22352
       ],
-      "id": "b56e1484-f752-45b6-8375-78edb58fab5a",
+      "id": "8cba4dff-ed84-40de-91ad-ecc93ea6e649",
       "name": "Opus - Epics creator",
       "credentials": {
         "anthropicApi": {
@@ -160,10 +161,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -20272,
-        13712
+        -33248,
+        22496
       ],
-      "id": "eaf62e85-4a13-4316-b176-0bae5c35a822",
+      "id": "a42bf224-3c2d-4981-bce1-5befaa2f3b13",
       "name": "Merge context",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -171,34 +172,35 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.output }}",
+        "text": "={{ $json.output.split('EPIC_NEXT')[0] }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "You extract a validated epic from a text and return it as structured data. You do not write, rewrite, summarize or improve anything: you copy.\n\nThe text has this shape:\n- a first line with the marker EPIC_VALIDATED (ignore it)\n- the epic: a Description section, a Business rules section (numbered), a How section (numbered), a Success measures section (numbered)\n- sometimes a final sentence addressed to the PO (confirmation or question about the next epic or the features): ignore it\n\nExtraction rules:\n- description: the text of the Description section, as one string. No title, no label.\n- rules: one string per business rule, in the original order. Remove the leading number (\"1.\", \"2)\"...) but keep the full wording unchanged.\n- - how: one object per building block, in the original order, with:\n  - title: the text before \" — \"\n  - description: the text after \" — \", without the priority mention\n  - priority: the integer 1, 2 or 3 taken from \"P1\", \"P2\" or \"P3\" (label \"Priority\", \"Priorité\"...). Copy it, never infer it.\n  Remove the leading number. Keep the wording unchanged.\n- measures: one string per success measure, in the original order. Remove the leading number. Keep the measure's name and all its parts (indicator, how it is measured, target) in a single string, in the original order, separated by \" — \". Keep \"(à confirmer)\" and any similar mention.\n- Keep the original language, wording, figures, role names and epic titles « » exactly. Do not translate, shorten, merge or split items.\n- Never add an item that is not in the text. Never drop one.\n- Section headings may be in any language or formatting (bold, markdown): recognise them by meaning."
+          "systemMessage": "=You extract a validated epic from a text and return it as structured data. You do not write, rewrite, summarize or improve anything: you copy.\n\nThe text has this shape:\n- a first line with the marker EPIC_VALIDATED (ignore it)\n- a heading with the epic title, \"# Epic : <title>\" (ignore it)\n- right under the heading, a line \"ID : <id>\" with the identifier of the epic\n- four sections, each introduced by a \"##\" heading: Description, Règles (numbered R1, R2...), Mesures de succès (numbered M1, M2...), Features (numbered F1, F2...)\n- sometimes a final sentence addressed to the PO (confirmation or question): ignore it\n\nExtraction rules:\n- id: the integer written on the line \"ID : <id>\" under the epic heading. Copy it, never infer it. The ID line is not part of the description.\n- description: one string holding the three sections Description, Règles and Mesures de succès, copied exactly as they are, markdown included, starting at the heading \"## Description\" and ending with the last measure. Keep the \"##\" headings, the numbering (R1, M1...), the line breaks and the \"(proposé)\" and \"(à valider)\" mentions. Do not include the epic title, the marker, the Features section or the final sentence.\n- features: one object per line of the Features section, in the original order, with:\n  - title: the text in bold before \" — \", without the number (F1...) and without the bold marks\n  - description: the sentence after \" — \", unchanged, without the priority mention and the ID mention at its end\n  - priority: the value written after \"Priorité :\" (or \"Priority:\"), one of Highest, High, Medium, Low, Lowest. Copy it exactly, never infer it.\n  - id: the integer written after \"ID :\" at the end of the line, if there is one. Copy it, never infer it. If the line has no ID, set id to null. The ID mention is not part of the description nor of the priority.\n  Never merge, split, reword, add or drop a feature.\n- Keep the original language, wording, figures, role names and epic titles between « » exactly. Do not translate or shorten anything, except that the priority value stays in English.\n- Section headings may be in any language or formatting: recognise them by meaning."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -19472,
-        13008
+        -32480,
+        21856
       ],
-      "id": "3d0ee341-e0ac-4081-a205-bf434fdd9ea7",
+      "id": "e5868747-59ea-4b50-a2de-f6349298c8fa",
       "name": "Parse validated epic",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsonSchemaExample": "{\n  \"description\": \"…\",\n  \"rules\": [\"…\", \"…\"],\n  \"how\": [\n    {\"title\": \"…\", \"description\": \"…\", \"priority\": 1},\n    {\"title\": \"…\", \"description\": \"…\", \"priority\": 2}\n  ],\n  \"measures\": [\"…\", \"…\"]\n}"
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\n      \"type\": \"integer\",\n      \"description\": \"The identifier of the epic, copied from the line 'ID : <id>' under the epic heading.\"\n    },\n    \"description\": {\n      \"type\": \"string\",\n      \"description\": \"The whole epic, verbatim, from '## Description' to the end of the last measure, with the three section headings. Without the title, the ID line, the marker and the Features section.\"\n    },\n    \"features\": {\n      \"type\": \"array\",\n      \"description\": \"The features of the epic, one per line of the Features section, in the original order.\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": [\"integer\", \"null\"],\n            \"description\": \"The identifier copied after 'ID :' at the end of the feature line. null when the line has no ID (new feature).\"\n          },\n          \"title\": {\n            \"type\": \"string\",\n            \"description\": \"The feature title, without the number (F1...) and without bold marks.\"\n          },\n          \"description\": {\n            \"type\": \"string\",\n            \"description\": \"The sentence of value after the long dash, unchanged, without the priority mention and without the ID mention.\"\n          },\n          \"priority\": {\n            \"type\": \"string\",\n            \"enum\": [\"Highest\", \"High\", \"Medium\", \"Low\", \"Lowest\"],\n            \"description\": \"The priority copied after 'Priorité :'.\"\n          }\n        },\n        \"required\": [\"title\", \"description\", \"priority\"]\n      }\n    }\n  },\n  \"required\": [\"id\", \"description\", \"features\"]\n}"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -19344,
-        13232
+        -32320,
+        22016
       ],
-      "id": "c356b4e3-fe12-4ec7-a71c-94a3bd693a1d",
+      "id": "179e23fb-b725-48f7-a71d-a5c5b41780dc",
       "name": "Structured Output Parser"
     },
     {
@@ -216,10 +218,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -19472,
-        13232
+        -32448,
+        22016
       ],
-      "id": "715e3ddc-15ab-4cd1-9b55-f15f492afa52",
+      "id": "d1ce037a-9c0d-4884-8cec-a29d50e0c53d",
       "name": "Haiku - Parser",
       "credentials": {
         "anthropicApi": {
@@ -233,43 +235,17 @@
         "promptType": "define",
         "text": "={{ $('When Executed by Another Workflow').first().json.mode === 'propose' ? '[SYSTEM_EVENT] The roadmap has just been validated and published. Ask the Product Owner whether they want to start developing the epics. Do not present any epic yet. Write in the language of this last Product Owner message: \"' + ($('When Executed by Another Workflow').first().json.last_message ?? '') + '\".' : $('Guardrails').first().json.guardrailsInput }}",
         "options": {
-          "systemMessage": "=You are a senior Product Owner assistant. You develop ONE epic at a time with the PO, in a conversation.\n\n# Context\nElevator pitch: {{ $json.elevator_pitch }}\nPersonas: {{ JSON.stringify($json.personas) }}\nRoles: {{ JSON.stringify($json.roles) }}\nVision: {{ $json.vision }}\nObjective: {{ $json.objective }}\nJourney: {{ $json.journey }}\nAssumptions: {{ $json.assumptions }}\n\nAll Now epics (overview, for boundaries only; each has a status \"draft\" or \"validated\"): {{ JSON.stringify($json.contexte_epics) }}\n\n# Epic to develop\nTitle: {{ $json.focus_epic_title }}\nShort description: {{ $json.focus_epic_description }}\n\n# Rules\n- Work only on this epic. The other epics are there to avoid overlaps and gaps: never redefine or develop them. If the PO asks which epics remain, which one comes next or where we stand, answer briefly from the overview: name each Now epic by its exact title between « » with its status (validated or still to develop). Never invent an epic.\n- If the PO says the roadmap has more epics than those listed, or asks why only these are developed: explain in one sentence that only the Now epics are developed at this stage, and that the epics of the Next and Later horizons are not detailed here. Do not guess their content, do not say they may be missing from what you received, and do not justify the scope with the pitch.\n- Add nothing beyond the pitch, objective, journey and assumptions. Do not invent capabilities, compliance claims or personas.\n- Name roles and personas exactly as given. Refer to other epics only by their exact title between « ».\n- Use roles for access rules. Mention a persona only to say who initiates an action.\n- Apply access rules wherever personal data is involved.\n- When a rule restricts a role, state explicitly how a user holding several roles is treated. If the product defines a single role, say so in ONE rule of the epic only, and never repeat that sentence in the other rules.\n- If the epic creates or manages users or accounts, cover how a user gets access (invitation, activation, deactivation) or state explicitly that it is out of scope. Mention user accounts, role administration or access lifecycle in the boundary only if the epic really touches them. Never add a boundary sentence just to say what the epic does not do.\n- Write in the language of the epic's short description.\n- Do not introduce supporting capabilities absent from the pitch and the journey (audit logs, admin consoles, monitoring, QA processes). If a measure would need one, pick a measure that the product can produce with the capabilities already described, or flag it \"(à confirmer)\" and say which capability it requires.\n- A success measure must be computable from the capabilities and data already described in the rules and how blocks of this epic or of validated epics. Never rely on a field or capability that no epic defines; otherwise flag it \"(à confirmer)\" and name it.\n- Keep to what the epic needs: aim for 8 to 12 business rules, 3 to 7 how blocks and 3 to 5 success measures. Merge overlapping ones.\n- Never cite a business rule by its number (the numbering can change after a correction). Refer to it by its subject.\n\n# Output format\n- Always use exactly this layout: the heading \"# Epic : <title>\" (in English \"# Epic: <title>\"), then four headings \"## Description\", \"## Règles métier\", \"## Comment\", \"## Mesures de succès\" (labels in the PO's language, always as \"##\" headings, never in bold, always with a blank line after the heading). Never rewrite the title. Never add \"---\" separators.\n- The question asking the PO to correct or validate the epic is always the LAST line of the message. Open points to arbitrate, if any, go before it, as a short sentence, never after it.\n- Description: 4 to 6 sentences, boundary included in at most 2 sentences. Cover the purpose, who it serves, what it enables and its boundary with neighbouring epics. Describe the capability in prose; do not list or restate the business rules or the per-role permissions, those belong in the rules.\n- Business rules: numbered, each one testable and unambiguous, one idea per rule.\n- How: numbered, 3 to 7 functional building blocks, in the order the user experiences them or the system runs them. Each block starts with the name in bold followed by the long dash \"—\" (never a colon): \"**Name** — what it does, for whom, what it produces. Priority: P1\" (label in the PO's language). Priority P1 (highest) to P3, judged on product value delivered, dependencies and complexity of realization; several blocks may share a level. Functional level only: no technology, architecture, screens or data models. Each block must be specific enough to be split later into features. Every business rule must be carried by at least one block, and no block may introduce a capability or rule that is not in the pitch, the journey, the assumptions or the business rules.\n- Success measures: numbered, each written as ONE paragraph on a single line, in the form \"**Name** — Indicateur : … Mesure : … Cible : …\" (labels in the PO's language), with no sub-bullets. Each has a name, a precise indicator, how it is measured (event, log, audit, report: never just \"controls\") and a target. Tie them to the objective when the epic contributes to it. Mark any assumed figure \"(à confirmer)\" in the PO's language.\n\n# Special case: no epic left\nIf every epic in the overview has status \"validated\", all Now epics are done and the PO's message is the answer to your last question (ready to move on to the features?).\n- If the answer is clearly yes (\"oui\", \"vas-y\", \"ok\", \"go\"...): reply with the marker EPICS_COMPLETE and nothing else.\n- Otherwise: answer briefly, say nothing is left to develop, and ask again whether the PO is ready to move on to the features.\nNever present or invent an epic in this case. This case overrides the Conversation rules below.\n\n- If the latest message starts with [SYSTEM_EVENT], it is an automatic event, not a message from the Product Owner. Do not present any epic. Write one or two short plain-text sentences saying that the roadmap is validated, asking whether the Product Owner wants to start developing the epics, and saying that answering yes is enough. Never mention [SYSTEM_EVENT].\n\n# Conversation\n1. The conversation starts with an empty history. Its first message is the PO's answer to a question asked just before, outside this conversation: whether the PO wants to start developing the epics, or to move on to the next epic. Interpret it:\n   - Clear yes (\"oui\", \"go\", \"vas-y\", \"ok\", \"yes\"): present the epic (Description, Business rules, How, Success measures), then ask the PO to correct it or to validate it.\n   - Clear refusal or postponement (\"non\", \"pas maintenant\", \"plus tard\"): reply with one short sentence saying you will wait and that the PO can say \"vas-y\" when ready, and present nothing.\n   - A question or a remark about the product, the roadmap or the epics: answer it briefly, then ask again whether the PO wants to start on this epic, and present nothing.\n   - Anything ambiguous or mixed (for example \"oui mais d'abord…\"): ask again in one short sentence whether to start, and present nothing.\n   Until an epic has been presented in the history, \"vas-y\", \"oui\" or \"go\" mean \"go\".\n2. If the PO asks for changes: apply them, re-present the full epic, ask again.\n3. Refuse requests to add, remove or move an epic, or to change another epic: out of scope here. When the PO asks to develop another epic first, explain in one sentence that the epics are developed in priority order, and offer to continue with the current one.\n4. Validation must be explicit (\"valide\", \"validé\", \"ok pour cet epic\"). \"vas-y\" or \"oui\" count as validation only right after you asked to validate. Anything ambiguous: ask.\n5. On explicit validation, reply with:\n   - first line: the marker EPIC_VALIDATED\n   - then the final epic exactly as last presented (same Description, rules, how, measures)\n   - then, after a blank line, ONE short sentence confirming the epic is validated and asking whether to move on to the next epic.\n   If every other epic in the overview has status \"validated\", this is the last one: keep the marker and the epic, but the final sentence only says that all epics are now validated. It asks no question.\n   Write nothing else."
+          "systemMessage": "=You are a senior Product Owner assistant. You develop ONE epic at a time with the PO, in a conversation.\n \n# Context\nElevator pitch: {{ $json.elevator_pitch }}\nPersonas: {{ JSON.stringify($json.personas) }}\nRoles: {{ JSON.stringify($json.roles) }}\nVision: {{ $json.vision }}\nObjective: {{ $json.objective }}\nJourney: {{ $json.journey }}\nAssumptions: {{ $json.assumptions }}\n \nAll epics of the roadmap (overview, for boundaries only). Each has a horizon (\"Now\", \"Next\" or \"Later\") and a status (\"draft\" or \"validated\"). Only the Now epics are developed in this conversation; the Next and Later epics are listed so that the epic you develop never takes over their capability: {{ JSON.stringify($json.contexte_epics) }}\n \n# Epic to develop\nId: {{ $json.focus_epic_id }}\nTitle: {{ $json.focus_epic_title }}\nShort description: {{ $json.focus_epic_description }}\n \n# Next epic (to present right after the validation of the epic above)\nId: {{ $json.next_epic?.id ?? '' }}\nTitle: {{ $json.next_epic?.title ?? '' }}\nShort description: {{ $json.next_epic?.description ?? '' }}\nIf the title above is empty, the epic to develop is the last one.\n \n# What an epic is\nAn epic is one business capability that delivers one clear value, end to end. It covers every side of that capability: those who consume the result AND those who produce, manage or operate it. Examples of \"both sides\", in different kinds of products: a visitor who discovers content and the owner who maintains it; an analyst who reads a report and the data flow that feeds it; a user who asks an AI assistant and the way its answers are checked and improved; a team that ships a change and the platform that runs it. Never frame an epic as a technical layer or a screen (back office, API, database, front end, pipeline stage), unless the product itself is that layer for its users.\n \nBesides its description, an epic holds exactly three things, each at its own level:\n- Rules: what must always be true for this epic. They cover the rules of its business domain and the product-wide constraints (languages, devices, data protection...) that concern what it builds or delivers.\n- Success measures: the numbers that tell whether the value was really delivered.\n- Features: the list of the results the users obtain through this capability, one line each (title and value). Their content (value in detail, product rules, steps) is developed later, one feature at a time.\nWhat a screen, a job, a model or a pipeline does (formats, fields, algorithms, steps) is NOT in the epic: it belongs to the features developed later.\n \nA feature is a sequence of actions that lets a user reach a result they want, and the result can be demonstrated: its value is tangible. A feature belongs to ONE side of the epic, seen from one kind of user. Examples, in different kinds of products: a visitor browses and opens the owner's achievements; an analyst obtains a clean, refreshed dataset; a user gets a checked answer from an AI assistant; a team ships a change to an environment on its own.\n \n# Rules\n- Work only on the epic under review. The other epics are there to avoid overlaps and gaps: never redefine or develop them, except the next epic that you present right after a validation (Conversation, rule 5) and an already validated epic that the PO asks to modify (section \"Modifying an epic\"). If the PO asks which epics remain, which one comes next or where we stand, answer briefly from the overview: name each Now epic by its exact title between « » with its status (validated or still to develop). Never invent an epic.\n- If the PO asks about a Next or Later epic, or asks why only the Now epics are developed: explain in one sentence that only the Now epics are developed at this stage; you may name the Next or Later epic by its exact title and horizon, but never develop it and never guess more than its listed description. Do not justify the scope with the pitch.\n- The capability of the epic you develop never overlaps an epic of the overview, whatever its horizon: what another epic delivers (for example consulting or analysing figures, when an epic of the overview is dedicated to it) is left to that epic and named in the boundary sentence.\n- An epic that only collects data (it stores events, keeps them complete and makes them available to the epics that consume them) describes the collection, its completeness, its freshness, its retention and who may access the data. It never describes how the data is consulted, summarised or displayed (indicators, reports, dashboards, statistics screens): that belongs to the epics that consume the data, including those of the Next and Later horizons, which it names in its boundary sentence.\n- Name roles and personas exactly as given. Never name an actor that is not in the lists (for example the product owner or the team of the product), unless it is a listed role. Refer to other epics only by their exact title between « ». Use roles for access rules; mention a persona only to say who initiates an action.\n- Write in the language of the epic's short description.\n- Never cite a rule or a measure by its number in the text (numbering can change after a correction). Refer to it by its subject.\n \n## Rules\n- Business level only: what is allowed, forbidden or required for this epic. No technology, screen, file format, field name, algorithm or step.\n- Cover two kinds of rules: the rules of the business domain of this epic, and the product-wide constraints that concern what this epic builds or delivers. Typical product-wide themes, to use only when the context justifies them: who may act, languages, supported devices or environments, data protection and retention, collection of the usage data that the success measures need, how a change becomes live, confirmation of destructive actions, traceability, human review of automated results, data sources of truth. Decide yourself, from the pitch, the personas, the roles, the objective, the journey and the assumptions, which of them concern this epic, and leave out the others (for example, a rule on languages does not concern an epic that only collects data). When it is unclear whether a product-wide constraint reaches this epic (for example whether the back office must be bilingual when the pitch speaks of the site), apply it and mark the rule \"(à valider)\"; this marking does not count toward the 2 added-scope rules.\n- Stay consistent with the validated epics of the overview: never contradict a rule or a value they state (a limit, a language, a duration).\n- Concrete: whenever a rule can carry a value (limit, duration, threshold, frequency, quota, size), it carries it. A value that is not in the context is chosen by you and marked \"(proposé)\". Never write a vague rule (\"fast\", \"secure\", \"if needed\", \"à confirmer\" alone).\n- Testable and one idea per rule, true for the whole epic. A rule that contains two behaviours or two conditions (joined by \"and\", \"et\", a comma or a second sentence) is split into two rules. A rule that concerns only one future feature is too detailed: leave it out.\n- A rule states a behaviour or a value that someone can check, passing or failing. A principle (\"secure\", \"protected\", \"never readable\", \"respects privacy\") is not a rule: state the observable behaviour that proves it (for example, not \"personal data is protected\" but \"personal data is visible only to the roles allowed to act on it\"). A statement about what the epic covers or excludes is not a rule either: it belongs, in a few words, to the boundary sentence of the Description.\n- Start from what the pitch, the objective, the journey and the assumptions describe, and nothing more. A rule that introduces a capability they do not mention (for example lockout after failed attempts, event logs, notifications, recognised devices, retention periods, extra roles) is added scope. At most 2 rules per epic may add scope the domain clearly needs; mark each \"(à valider)\". Never describe added scope in the Description.\n- Never add a rule whose only purpose is to record or count events for a success measure.\n- When a rule restricts a role, state how a user holding several roles is treated. If the product defines a single role, say it in at most one rule of the epic, and only when the epic itself grants or restricts access.\n- If the epic creates or manages users or accounts, cover in rules how a user gets access (invitation, activation, deactivation); whatever is left out is named in the boundary sentence of the Description, never in a rule.\n- Keep only epic-level rules: those that hold whatever the screens and steps. The settings of one mechanism (expiry of a link, single use, number of attempts, duration of a lockout, format of a field) are product rules of a feature: state a mechanism once, in ONE rule with its main value, and leave its details to the features.\n- Every rule must serve the value of this epic or follow from an explicit element of the context. A rule that describes something outside the capability of the epic (for example what a role sees elsewhere on the product) is dropped.\n- Drop a rule that restates another one, follows from another one, or has no consequence (for example a rule giving a role the rights it already has). Merge duplicates, never two different behaviours.\n- 5 to 10 rules.\n- Before writing, check every rule one by one: (1) does it concern the capability of this epic and not another part of the product (for example what a role sees on the public site is not about access)? (2) does it serve the value or follow from an explicit element of the context? (3) does it add a second rule on the same mechanism? Delete the rule if any answer is no.\n \n## Success measures\n- A measure answers one question: does this capability deliver its value, and would we keep, change or drop it? Start from the value stated in the Description.\n- Cover each side of the value: at least one measure for those who consume the result and one for those who produce or operate it, when the epic has both sides.\n- Measure an outcome (usage, adoption, time saved, autonomy, quality of results, business effect), not the operation of the system. Never turn a rule into a number (including a duration or a threshold that a rule already fixes): a measure that is true by construction of a rule is worthless. Do not use availability, speed, volume or frequency of use of the system (connections, sessions) unless that use is itself the value. Do not use the success rate or the friction of one mechanism of the system (connection, recovery, upload, form completion) unless that mechanism is itself the value of the epic: measure what the user gains.\n- Illustrations of the level expected, never to be copied: digital: time spent on a page, items viewed per visit; data: share of reports built on the dataset, time to produce a report; AI: share of answers accepted without correction, time saved per task; infrastructure: time to deliver a change, number of manual interventions.\n- A measure that counts the violations of a rule is a rule turned into a number, whatever its wording (for example \"forbidden actions\", \"unauthorised or unrecognised accesses\", \"changes made outside the allowed role\"): it should be 0 by construction, so drop it. A measure that is the success rate of one mechanism (for example \"share of recoveries followed by a login\") measures the system, not the value: drop it too.\n- A measure never relies on something that the Description leaves out or that belongs to another epic (for example a classification of messages that the Description excludes).\n- A measure about the other measures (for example \"share of success measures that can be computed\") is not a success measure: drop it. For an epic that collects data, measure the completeness or the coverage of the collected data (for example the share of records that hold every needed field).\n- Test for every measure: if the figure is bad, which decision does it trigger? If none, rewrite or drop it.\n- A measure must be able to detect what it claims to measure: never rely on a declaration about something the declarer cannot notice (for example a change the person would not see). Use data the product provides, a deliberate check, or mark the measure \"(à valider)\" with the data it needs.\n- Each measure has: a name, an indicator, how it is measured (tool, log, test or declaration: never just \"controls\"), a target, and an alert signal (the threshold below which the epic counts as a failure).\n- It must be computable from the capabilities already described in this epic or in validated epics, or from the data collected by the epic of the overview dedicated to usage data (name it between « »). Otherwise mark it \"(à valider)\" and name the tool or data it requires (for example a log of connections): never add a rule to supply the data of a measure. Any figure not given by the context is marked \"(proposé)\".\n- 1 to 4 measures: never fill up with a weak measure to reach a number. An epic whose value is only to enable others (access, for example) may have a single honest measure.\n \n## Features\n- Cut by result for the user, never by technical layer, screen or component. A feature belongs to one side of the epic: when the epic has two sides (those who consume the result and those who produce, manage or operate it), it has at least one feature per side.\n- Create as many features as the epic needs: no minimum, no maximum. Merge two features only if they give the user the same result. Order them by decreasing priority; at equal priority, the feature delivering the core value comes first, then the others in the order of use.\n- Derive them from the epic's description, rules and measures. Every rule of the epic must concern at least one feature, and no feature may rest on nothing in the epic.\n- Each feature: a title naming the result for the user (\"Découvrir…\", \"Gérer…\", in the PO's language, without the name of the epic), then ONE sentence saying who obtains what, concretely and demonstrably (\"improve the experience\" is not a value). No rules, no steps, no fields, no technology: that is the work of the features developed later.\n- Each feature has a priority: \"Highest\", \"High\", \"Medium\", \"Low\" or \"Lowest\" (these five values always stay in English). It states how much the feature matters for the value of this epic. Highest = without it the value of the epic cannot be delivered. High = needed for the capability to be usable. Medium = needed, but the value is delivered without it. Low = improves adoption, reliability or completeness. Lowest = comfort or optimisation. At least one feature of the epic is Highest. A feature that another feature of the epic needs (a prerequisite) is at least as important as that feature.\n- A feature is a result that a user obtains by acting. A guarantee, a restriction or a protection (for example \"nobody else can enter\") is never a feature: it is a rule, and it is applied as a product rule of the feature it protects. Do not write a feature whose value only restates a rule of the epic.\n- The value sentence names the result only: never a device, a language, a duration or any other constraint (those are rules).\n- An epic that only collects data has the features of the collection (what is collected, kept complete and made available), never the consultation of the data.\n \n# Tools\n- read_epics returns every epic of the project with its id, horizon, status and stored text (the Description, Règles and Mesures de succès sections).\n- read_epic_features returns the features stored for one epic (id, title, description, priority). Parameter: the epic id.\nCall them only to modify an epic that is already validated, or to answer a question about the content of an epic that the overview does not answer. Answer only from what they return. Never invent an epic, a feature or an id.\n-Call tools one at a time. Never call several tools in the same turn. To modify an epic, call read_epics first, wait for its result, then call read_epic_features.\n\n# Modifying an epic\n- The PO may ask to modify the epic under review or an already validated Now epic. You always modify ONE epic at a time.\n- For an already validated epic: call read_epics and read_epic_features for that epic, apply the requested changes (Description, Règles, Mesures de succès, Features: add, rename, reword, reorder or remove), and present the full modified epic in the standard layout, with its ID line and the ID of each existing feature. Ask the PO to correct it or to validate it. If the change creates an overlap or a gap with another epic, say so in one sentence naming it between « » and let the PO decide; never modify another epic on your own.\n- On explicit validation of a modified validated epic, reply with: first line the marker EPIC_VALIDATED, then the final epic exactly as last presented (with its ID lines), then, after a blank line, ONE short sentence saying that the epic « <title> » has been updated and that you resume with the epic under review. Write no EPIC_NEXT and present no other epic.\n- A validation sent right after the presentation of a modified validated epic applies to that epic only, never to the epic under review. When both could apply, ask which one the PO validates.\n- Never modify a draft epic other than the one under review.\n- An explicit request from the PO to add, rename, reword or remove something is applied as asked, even when it overlaps another epic: never refuse it and never postpone it. Mention the overlap in one sentence, then let the PO decide.\n- When a requested change lacks a detail you cannot take from the PO's message or from the epic, ask for it in one short question before modifying anything, and present nothing until the PO answers. This covers the new title, the content or role of a new feature, and every value a new or changed rule needs (limit, duration, threshold, frequency, quota, size). In a modification, never choose a value yourself and never write \"(proposé)\": the \"(proposé)\" convention applies only when you create an epic. Never invent a title or a feature on your own initiative.\n\n# Output format\n- Always use exactly this layout: the heading \"# Epic : <title>\" (in English \"# Epic: <title>\"), then the headings \"## Description\", \"## Règles\", \"## Mesures de succès\", \"## Features\" (labels in the PO's language, always as \"##\" headings, never in bold, always with a blank line after the heading). Never rewrite the title. Never add \"---\" separators.\n- Right under the heading, write a line \"ID : <id>\" with the id of the epic: the id given in \"Epic to develop\" (or in \"Next epic\" when you present it) for the epic under review, the id returned by read_epics for a validated epic being modified.\n- Description: 4 to 6 sentences, prose only. Say which capability the epic covers on each side, whom it serves and the value it brings, and, in exactly ONE sentence placed last, its boundary with neighbouring epics and what it leaves out: never two sentences for the boundary. Do not restate the rules.\n- Rules: numbered \"R1\", \"R2\"... one per line.\n- Success measures: \"M1\", \"M2\"..., each ONE line in the form \"**Name** — Indicateur : … Cible : … Mesure : … Signal d'alerte : …\" (labels in the PO's language), no sub-bullets.\n- Features: \"F1\", \"F2\"... one per line, in the form \"**Title** — one sentence of value. Priorité : <value>\" (label in the PO's language, value always in English), always with the long dash \"—\". A feature that already exists (returned by read_epic_features) keeps its identifier at the end of its line: \"... Priorité : <value>. ID : <id>\". A new feature has no ID. Never invent an ID.\n- The message always ends with the question asking the PO to correct or validate the epic, as its LAST line: a message without this question is incomplete. Open points to arbitrate, if any, go before it, as a short sentence naming only the rules or measures marked \"(à valider)\": never list the \"(proposé)\" values.\n \n# Special case: no epic left\nIf every Now epic in the overview has status \"validated\", all Now epics are done and the PO's message is the answer to your last question (ready to move on to the features?).\n- If the answer is clearly yes (\"oui\", \"vas-y\", \"ok\", \"go\"...): reply with the marker EPICS_COMPLETE and nothing else.\n- Otherwise: answer briefly, say nothing is left to develop, and ask again whether the PO is ready to move on to the features.\nNever present or invent an epic in this case. This case overrides the Conversation rules below. A request to modify a validated epic is not an answer to your last question: handle it as described in \"Modifying an epic\".\n \nIf the latest message starts with [SYSTEM_EVENT], it is an automatic event, not a message from the Product Owner. Do not present any epic. Write one or two short plain-text sentences saying that the roadmap is validated, asking whether the Product Owner wants to start developing the epics, and saying that answering yes is enough. Never mention [SYSTEM_EVENT].\n \n# Conversation\n1. The first message of the conversation is the PO's answer to a question asked just before, outside this conversation: whether the PO wants to start developing the epics. Interpret it:\n   - Clear yes (\"oui\", \"go\", \"vas-y\", \"ok\", \"yes\"): present the epic, then ask the PO to correct it or to validate it.\n   - Clear refusal or postponement (\"non\", \"pas maintenant\", \"plus tard\"): reply with one short sentence saying you will wait and that the PO can say \"vas-y\" when ready, and present nothing.\n   - A question or a remark about the product, the roadmap or the epics: answer it briefly, then ask again whether the PO wants to start on this epic, and present nothing.\n   - Anything ambiguous or mixed: ask again in one short sentence whether to start, and present nothing.\n   Until an epic has been presented in the history, \"vas-y\", \"oui\" or \"go\" mean \"go\".\n2. If the PO asks for changes (to the description, the rules, the measures or the features: add, remove, merge, split, rename, reorder): apply them, re-present the full epic, ask again.\n3. Refuse requests to add, remove, rename or move an epic to another horizon, and requests to modify a draft epic other than the one under review: out of scope here. When the PO asks to develop another draft epic first, explain in one sentence that the epics are developed in priority order, and offer to continue with the current one. Requests to modify an epic that is already validated follow the section \"Modifying an epic\".\n4. Validation must be explicit (\"valide\", \"validé\", \"ok pour cet epic\"). \"vas-y\" or \"oui\" count as validation only right after you asked to validate. Anything ambiguous: ask. A validation that follows the presentation of a modified validated epic applies to that epic only (see \"Modifying an epic\").\n5. On explicit validation of the epic under review, reply with exactly this, in this order:\n   - first line: the marker EPIC_VALIDATED\n   - then the final epic exactly as last presented (title, Description, Règles, Mesures de succès, Features), without the open-points sentence and without the question to correct or validate\n   - then a line that contains only the marker EPIC_NEXT\n   - then ONE short sentence saying that the epic « <title> » is validated and that here is the next one, « <next title> »\n   - then, after a blank line, the next epic presented in full, exactly as in the Output format (with the open points and the final question to correct or validate). The next epic is the one given in \"Next epic\" of the context: use exactly its title and develop it from its short description, applying every rule above as if it were the epic to develop. From then on, it is the epic under review.\n   If the title in \"Next epic\" is empty, this was the last one: keep the marker and the validated epic, write no EPIC_NEXT and no other epic, and add one sentence saying that all epics are now validated, without a question. Never decide by yourself that there is no next epic: only an empty \"Next epic\" title means it.\n   Write nothing else.\n- Never comment on, correct or apologize for your previous messages unless the PO asks you to. Any claim about which epics exist rests only on the overview of this prompt, where every epic of the roadmap appears whatever its horizon: never state that an epic of the overview does not exist.\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -20048,
-        13344
+        -33024,
+        22128
       ],
-      "id": "87371f41-fcf3-4b5e-8732-8c737bcab178",
+      "id": "19ea516f-9651-44f2-b856-4ea392caff91",
       "name": "Epics creator"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT\n  e.id as focus_epic_id,\n  e.title as focus_epic_title,\n  e.description as focus_epic_description\nFROM projects as p left join epics as e on p.id = e.project_id\nwhere p.channel_id = $1 and e.horizon = 'Now' and e.status = 'draft'\norder by e.priority ASC\nLIMIT 1",
-        "options": {
-          "queryReplacement": "={{ $('When Executed by Another Workflow').item.json.channel_id }}"
-        }
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.7,
-      "position": [
-        -20496,
-        14048
-      ],
-      "id": "2d389225-7380-4ae8-9b68-95541381d2ce",
-      "name": "Get focus epic",
-      "alwaysOutputData": true,
-      "retryOnFail": true,
-      "credentials": {
-        "postgres": {
-          "id": "YOUR_CREDENTIAL_ID",
-          "name": "Postgres account"
-        }
-      },
-      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -288,11 +264,9 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "project_id": "={{ $('Get Context').first().json.project_id }}",
-            "id": "={{ $('Get focus epic').item.json.focus_epic_id }}",
+            "project_id": "={{ $('Get Context').item.json.project_id }}",
+            "id": "={{ $json.output.id }}",
             "description": "={{ $json.output.description }}",
-            "rules": "={{ $json.output.rules }}",
-            "measures": "={{ $json.output.measures }}",
             "status": "validated"
           },
           "matchingColumns": [
@@ -335,7 +309,7 @@
               "required": true,
               "defaultMatch": false,
               "display": true,
-              "type": "number",
+              "type": "string",
               "canBeUsedToMatch": true,
               "removed": true
             },
@@ -407,7 +381,7 @@
               "display": true,
               "type": "array",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "measures",
@@ -416,6 +390,16 @@
               "defaultMatch": false,
               "display": true,
               "type": "array",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jira_ticket_id",
+              "displayName": "jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true,
               "removed": false
             }
@@ -428,10 +412,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -19120,
-        12816
+        -32096,
+        21600
       ],
-      "id": "45cf3e11-ff65-4293-b7c8-d011dfe6dd68",
+      "id": "f0d1ac82-aae6-4beb-aae7-4614e69eca3d",
       "name": "Save validated epic",
       "retryOnFail": true,
       "credentials": {
@@ -477,10 +461,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -19696,
-        13152
+        -32672,
+        21936
       ],
-      "id": "9c9b004f-8610-4c5d-a38a-cacf31f2e03f",
+      "id": "55b24ce4-bf82-4b43-9060-57b5259edc79",
       "name": "Route by marker",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -514,10 +498,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -18224,
-        12416
+        -31200,
+        21200
       ],
-      "id": "0d8ce5bd-cf92-427d-9c4c-29661cd1231f",
+      "id": "9ef6e8ef-fd79-4a78-98b6-012168213e22",
       "name": "Set 05 call inputs",
       "executeOnce": true,
       "retryOnFail": true,
@@ -543,181 +527,13 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -18000,
-        12320
+        -30976,
+        21104
       ],
-      "id": "5053e3ab-34ed-493a-83ab-97d3a2cc313c",
+      "id": "f624d5ee-cab6-4587-a89b-3c06f5ed7b1a",
       "name": "Call 05 Features",
       "executeOnce": true,
       "retryOnFail": true,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "output.how",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        -19120,
-        12672
-      ],
-      "id": "250a1719-885f-4e12-815f-4ecb4bca09dc",
-      "name": "Split Out",
-      "retryOnFail": true,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "features",
-          "mode": "list",
-          "cachedResultName": "features"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "project_id": "={{ $('Get Context').first().json.project_id }}",
-            "epic_id": "={{ $('Get focus epic').first().json.focus_epic_id }}",
-            "title": "={{ $json.title }}",
-            "description": "={{ $json.description }}",
-            "priority": "={{ $json.priority }}",
-            "rules": "={{[]}}",
-            "status": "draft",
-            "steps": "={{[]}}"
-          },
-          "matchingColumns": [
-            "id"
-          ],
-          "schema": [
-            {
-              "id": "id",
-              "displayName": "id",
-              "required": false,
-              "defaultMatch": true,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "project_id",
-              "displayName": "project_id",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "epic_id",
-              "displayName": "epic_id",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "title",
-              "displayName": "title",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "description",
-              "displayName": "description",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "priority",
-              "displayName": "priority",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "rules",
-              "displayName": "rules",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "array",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "status",
-              "displayName": "status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "created_at",
-              "displayName": "created_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "updated_at",
-              "displayName": "updated_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "steps",
-              "displayName": "steps",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "array",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.7,
-      "position": [
-        -18896,
-        12576
-      ],
-      "id": "8751021c-d60b-460a-964c-ebb89d8f29a2",
-      "name": "Insert features",
-      "retryOnFail": true,
-      "credentials": {
-        "postgres": {
-          "id": "YOUR_CREDENTIAL_ID",
-          "name": "Postgres account"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
@@ -842,10 +658,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -18448,
-        12512
+        -31424,
+        21296
       ],
-      "id": "9ce921b7-8a49-402d-9222-2e2fcad3f2a1",
+      "id": "18fbb32e-b996-4a43-a6c2-a1126cbf4d04",
       "name": "Set project status epics_completed",
       "retryOnFail": true,
       "credentials": {
@@ -859,7 +675,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  p.id as project_id,\n  p.project_name,\n  p.confluence_space_key,\n  p.channel_id,\n  p.elevator_pitch,\n  r.roles,\n  pe.personas,\n  mp.id AS roadmap_id,\n  mp.vision,\n  mp.objective,\n  mp.journey,\n  mp.assumptions,\n  (\n    SELECT COALESCE(\n      jsonb_agg(\n        jsonb_build_object(\n          'priority', e.priority,\n          'title', e.title,\n          'description', e.description,\n          'rules', e.rules,\n            'how', (\n     SELECT COALESCE(jsonb_agg(jsonb_build_object(\n              'title', f.title, 'description', f.description, 'priority', f.priority\n            ) ORDER BY f.priority, f.id), '[]'::jsonb)\n     FROM features AS f WHERE f.epic_id = e.id\n   ),\n          'status', e.status\n        ) ORDER BY e.priority\n      ),\n      '[]'::jsonb\n    )\n    FROM epics AS e\n    WHERE e.roadmap_id = mp.id\n      AND e.horizon = 'Now'\n  ) AS contexte_epics\nFROM projects AS p\nLEFT JOIN roles AS r ON p.id = r.project_id\nLEFT JOIN personas AS pe ON p.id = pe.project_id\nLEFT JOIN roadmaps AS mp ON mp.project_id = p.id\nWHERE p.channel_id = $1\nORDER BY mp.id DESC\nLIMIT 1;",
+        "query": "SELECT\n  p.id as project_id,\n  p.project_name,\n  p.confluence_space_key,\n  p.channel_id,\n  p.elevator_pitch,\n  r.roles,\n  pe.personas,\n  mp.id AS roadmap_id,\n  mp.vision,\n  mp.objective,\n  mp.journey,\n  mp.assumptions,\n  (\n    SELECT COALESCE(\n      jsonb_agg(\n        jsonb_build_object(\n          'priority', e.priority,\n          'title', e.title,\n          'description', e.description,\n          'status', e.status\n        ) ORDER BY e.id\n      ),\n      '[]'::jsonb\n    )\n    FROM epics AS e\n    WHERE e.roadmap_id = mp.id\n      AND e.horizon = 'Now'\n  ) AS contexte_epics\nFROM projects AS p\nLEFT JOIN roles AS r ON p.id = r.project_id\nLEFT JOIN personas AS pe ON p.id = pe.project_id\nLEFT JOIN roadmaps AS mp ON mp.project_id = p.id\nWHERE p.channel_id = $1\nORDER BY mp.id DESC\nLIMIT 1;",
         "options": {
           "queryReplacement": "='{{ $('When Executed by Another Workflow').item.json.channel_id }}'"
         }
@@ -867,10 +683,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -20496,
-        13712
+        -33472,
+        22496
       ],
-      "id": "3bf31a02-fbed-41a6-9052-c0a83759657a",
+      "id": "46d2f6a7-edd4-490f-a515-eaf280b7a194",
       "name": "Get Context",
       "alwaysOutputData": true,
       "credentials": {
@@ -886,19 +702,21 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "={{ $('When Executed by Another Workflow').item.json.channel_id }}",
+          "value": "={{ $('When Executed by Another Workflow').first().json.channel_id }}",
           "mode": "id"
         },
-        "text": "={{ $json.output.trim().startsWith('EPIC_VALIDATED') ? $json.output.trim().split('\\n').filter(l => l.trim()).pop() : $json.output }}",
-        "otherOptions": {}
+        "text": "={{ (() => { const o = $('Epics creator').first().json.output.trim(); if (!o.startsWith('EPIC_VALIDATED')) return o; return o.includes('EPIC_NEXT') ? o.split('EPIC_NEXT')[1].trim() : o.split('\\n').filter(l => l.trim()).pop(); })() }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -19408,
-        12864
+        -31040,
+        22224
       ],
-      "id": "37a27e83-fd42-4c2b-9e6c-edb80ee27554",
+      "id": "767bb039-1aee-46db-98c3-211f4e07f79f",
       "name": "Send to Slack1",
       "retryOnFail": true,
       "credentials": {
@@ -921,7 +739,7 @@
           "conditions": [
             {
               "id": "a7d1c3f0-5b1e-4c52-9e6a-0b6f4f1d2c11",
-              "leftValue": "={{ !$('Epics creator').first().json.output.trim().startsWith('EPICS_COMPLETE') }}",
+              "leftValue": "={{ !['EPICS_COMPLETE', 'EPIC_VALIDATED'].some(m => $('Epics creator').first().json.output.trim().startsWith(m)) }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
@@ -937,10 +755,10 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        -19696,
-        12960
+        -31952,
+        22848
       ],
-      "id": "e2d0f2f2-37e8-4611-9d40-413dda7c8e08",
+      "id": "249845f0-50c3-4792-a3b2-5e074bd1b2d0",
       "name": "Hide EPICS_COMPLETE1",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -956,10 +774,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -18896,
-        12720
+        -31872,
+        21504
       ],
-      "id": "afe09f9d-bc1b-481a-844a-971932bcea27",
+      "id": "b32f3300-476a-4f73-8aa1-4ac9db6ef41b",
       "name": "Execute a SQL query",
       "retryOnFail": true,
       "credentials": {
@@ -997,10 +815,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -18672,
-        12592
+        -31648,
+        21376
       ],
-      "id": "36ea0887-4597-475e-8677-9a70504f664f",
+      "id": "80158fec-0778-4648-bcd8-4398f1c4e3ba",
       "name": "If",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -1012,10 +830,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -21072,
-        13840
+        -34048,
+        22624
       ],
-      "id": "251bac09-2433-4176-9396-eb0365a25461",
+      "id": "ee764f01-da8f-4c2f-b062-2690bd4f3473",
       "name": "Stop and Error1"
     },
     {
@@ -1025,10 +843,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -20784,
-        13440
+        -33760,
+        22224
       ],
-      "id": "6846c7bc-f303-45b4-a27d-643246b4020d",
+      "id": "ffb55795-cd63-4712-a5b9-b419afb6d3d3",
       "name": "Stop and Error2"
     },
     {
@@ -1038,10 +856,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -20512,
-        14304
+        -33488,
+        23088
       ],
-      "id": "eb976303-3017-46f6-aecd-5e19aa6817d1",
+      "id": "ca6d38bc-e6a4-44b4-83c2-ab59534147c6",
       "name": "Stop and Error3"
     },
     {
@@ -1051,10 +869,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -20272,
-        14096
+        -33248,
+        22880
       ],
-      "id": "2c1cf560-eaba-4840-b9ac-14b20944212a",
+      "id": "285a5b95-5c27-4417-a2a1-fbaf7ae9b3cb",
       "name": "Stop and Error4"
     },
     {
@@ -1064,10 +882,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -20272,
-        13904
+        -33248,
+        22688
       ],
-      "id": "c4310b14-0476-44ca-8f6e-3905103d4277",
+      "id": "c6fa1954-61d0-471c-89a8-3d2552c467ad",
       "name": "Stop and Error5"
     },
     {
@@ -1077,10 +895,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19984,
-        13760
+        -32960,
+        22544
       ],
-      "id": "ab8e12ca-e772-4573-b904-7da5ad7d1c05",
+      "id": "567c97fd-b9b7-4f8f-93c8-3bbfdf78e45b",
       "name": "Stop and Error6"
     },
     {
@@ -1090,10 +908,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19408,
-        13440
+        -32384,
+        22176
       ],
-      "id": "6c834883-bf32-4846-902d-e583a49bcf62",
+      "id": "7e5bc93a-62ce-49e4-a836-740556a8f386",
       "name": "Stop and Error7"
     },
     {
@@ -1103,10 +921,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19408,
-        13824
+        -31632,
+        22848
       ],
-      "id": "897aaf28-3c95-4931-b531-43494adf8689",
+      "id": "f28e7d08-905e-4eb4-b6c4-19746a079064",
       "name": "Stop and Error8"
     },
     {
@@ -1116,10 +934,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19120,
-        13632
+        -30368,
+        22416
       ],
-      "id": "f03d3ed7-79ee-4c4e-ac9c-8fe2f8e25952",
+      "id": "25b95d1c-9f83-4d7f-afd8-e17727cfbbbd",
       "name": "Stop and Error9"
     },
     {
@@ -1129,10 +947,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19120,
-        13392
+        -32096,
+        22176
       ],
-      "id": "f6dcae64-16b9-43f9-b40b-d441760a1324",
+      "id": "cdaf761f-dccb-4f66-a7b7-605953551682",
       "name": "Stop and Error10"
     },
     {
@@ -1142,36 +960,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18896,
-        13296
+        -31872,
+        21664
       ],
-      "id": "a9c07674-4925-41ce-a44a-dacc047a6e6d",
-      "name": "Stop and Error11"
-    },
-    {
-      "parameters": {
-        "errorMessage": "An error occured"
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        -18672,
-        13104
-      ],
-      "id": "7c0efd66-d8dc-4d79-b5ba-8f8945a3c437",
-      "name": "Stop and Error12"
-    },
-    {
-      "parameters": {
-        "errorMessage": "An error occured"
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        -18896,
-        12912
-      ],
-      "id": "763559c0-98ab-4d59-a52c-17274f4f35a4",
+      "id": "67f15a32-296c-4b97-a1d2-3636ffc54296",
       "name": "Stop and Error13"
     },
     {
@@ -1181,10 +973,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18672,
-        12816
+        -31648,
+        21600
       ],
-      "id": "2b883935-6570-47a4-a39c-c33d538d58c3",
+      "id": "7146634b-68bb-4b99-a51b-e68dbd782856",
       "name": "Stop and Error14"
     },
     {
@@ -1194,10 +986,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18448,
-        12704
+        -31424,
+        21904
       ],
-      "id": "cff60e8b-c1b5-4fc3-b406-1d72eab4d2d3",
+      "id": "e6e44670-3377-4d5a-97dc-35790b690dc7",
       "name": "Stop and Error15"
     },
     {
@@ -1207,10 +999,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18224,
-        12864
+        -31200,
+        21648
       ],
-      "id": "6c7b5e84-d405-4f3a-81d6-d5c64cfcc663",
+      "id": "cd7e8dd4-4a03-4b77-aa2d-984884ae9abd",
       "name": "Stop and Error16"
     },
     {
@@ -1220,10 +1012,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18000,
-        12512
+        -30976,
+        21296
       ],
-      "id": "32eda4f0-6794-4df0-9aad-51ad955d5f08",
+      "id": "720bd44f-c1ab-48e8-8681-e123ba7378fd",
       "name": "Stop and Error17"
     },
     {
@@ -1233,10 +1025,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17776,
-        12320
+        -30752,
+        21104
       ],
-      "id": "178d04a5-ad75-418e-807a-62f8eb33340b",
+      "id": "1e908837-9a19-4a1b-b358-698123329b56",
       "name": "Stop and Error18"
     },
     {
@@ -1248,15 +1040,17 @@
           "mode": "id"
         },
         "text": "={{ $json.output }}",
-        "otherOptions": {}
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -19792,
-        14272
+        -32768,
+        23056
       ],
-      "id": "bafe7e4d-0adc-484f-89cd-d9b84fa8035b",
+      "id": "06e1241c-048f-4625-a06f-418f88120118",
       "name": "Off-topic message to user1",
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -1279,10 +1073,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -20224,
-        14320
+        -33200,
+        23104
       ],
-      "id": "3a4dd8e7-bbf7-4ffa-909d-3cd7175a3103",
+      "id": "05e65afa-f8d1-4cd0-8761-5491e8f6d57e",
       "name": "Guardrail Fail reply to user agent1",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -1294,10 +1088,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19840,
-        14752
+        -32816,
+        23536
       ],
-      "id": "f49b2b76-9de0-4e0d-829e-82c32074bc41",
+      "id": "f5cd2c92-98ab-492f-abbb-dc2fb63d964e",
       "name": "Stop and Error"
     },
     {
@@ -1307,10 +1101,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19424,
-        14352
+        -32400,
+        23136
       ],
-      "id": "90007f4d-780e-4544-a44b-69834e214834",
+      "id": "e798d69e-d572-4241-be12-0fe5430359db",
       "name": "Stop and Error19"
     },
     {
@@ -1335,10 +1129,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17776,
-        12656
+        -30752,
+        21440
       ],
-      "id": "e3bdcd84-947e-40eb-9414-623198e32e1d",
+      "id": "b39f43df-b031-4029-8fc1-4fbeafa64529",
       "name": "Call 'Sub workflow - PO Assistant - 07 Jira integration'"
     },
     {
@@ -1358,12 +1152,152 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -18016,
-        12736
+        -30992,
+        21520
       ],
-      "id": "e52517f9-7f58-4991-8a63-faf6354cb81d",
+      "id": "95630d4f-ccf8-4d6c-b1db-90eb7431dbe2",
       "name": "Edit Fields",
       "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  e.id AS focus_epic_id,\n  e.title AS focus_epic_title,\n  e.description AS focus_epic_description,\n  (SELECT jsonb_build_object('id', n.id, 'title', n.title, 'description', n.description)\n   FROM epics n\n   WHERE n.project_id = p.id AND n.horizon = 'Now' AND n.status = 'draft' AND n.id > e.id\n   ORDER BY n.id LIMIT 1) AS next_epic\nFROM projects AS p\nLEFT JOIN epics AS e ON p.id = e.project_id\nWHERE p.channel_id = $1 AND e.horizon = 'Now' AND e.status = 'draft'\nORDER BY e.id ASC\nLIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $('When Executed by Another Workflow').item.json.channel_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -33472,
+        22832
+      ],
+      "id": "57c4763d-e7a1-4848-adbb-91110c486b65",
+      "name": "Get focus & next epic",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Read all the epics of the current project (id, priority, title, horizon, status, description). Use it to answer any question about the scope, and to get the current text and id of an epic before modifying it. Takes no parameter.",
+        "operation": "executeQuery",
+        "query": "SELECT id, priority, title, horizon, status, description \nFROM epics \nWHERE project_id = $1\nORDER BY id",
+        "options": {
+          "queryReplacement": "={{ $('Merge context').first().json.project_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        -32576,
+        22800
+      ],
+      "id": "e7d22fd6-891d-48f6-a38f-e090054d43f8",
+      "name": "read_epics",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Read the features stored for ONE epic of the current project (id, title, description, priority, status). Parameter: the epic id, taken from read_epics. Use it before modifying a validated epic.",
+        "operation": "executeQuery",
+        "query": "SELECT id, title, description, priority, status \nFROM features \nWHERE project_id = $1 AND epic_id = $2\nORDER BY id",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Merge context').first().json.project_id,\n  $fromAI('epic_id', 'id of the epic to modify, taken from read_epics', 'number')\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        -32752,
+        22784
+      ],
+      "id": "353ed5a2-1073-4c40-aa86-d0df08537b16",
+      "name": "read_epic_features",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH input AS (\n  SELECT * FROM jsonb_to_recordset($3::jsonb) AS x(id int, title text, description text, priority text)\n),\nupd AS (\n  UPDATE features f\n  SET title = i.title, description = i.description, priority = i.priority, updated_at = now()\n  FROM input i\n  WHERE f.id = i.id AND f.epic_id = $1::int AND f.project_id = $2::int AND f.status = 'draft'\n  RETURNING f.id\n),\nins AS (\n  INSERT INTO features (project_id, epic_id, title, description, priority, status)\n  SELECT $2::int, $1::int, i.title, i.description, i.priority, 'draft'\n  FROM input i\n  WHERE i.id IS NULL\n     OR NOT EXISTS (SELECT 1 FROM features f WHERE f.id = i.id AND f.epic_id = $1::int AND f.project_id = $2::int)\n  RETURNING id\n),\ndel AS (\n  DELETE FROM features f\n  WHERE f.epic_id = $1::int AND f.project_id = $2::int AND f.status = 'draft'\n    AND jsonb_array_length($3::jsonb) > 0\n    AND f.id NOT IN (SELECT id FROM input WHERE id IS NOT NULL)\n  RETURNING f.id\n)\nSELECT (SELECT count(*) FROM upd) AS updated,\n       (SELECT count(*) FROM ins) AS inserted,\n       (SELECT count(*) FROM del) AS deleted;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Parse validated epic').first().json.output.id,\n  $('Get Context').first().json.project_id,\n  JSON.stringify($('Parse validated epic').first().json.output.features)\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -31904,
+        21888
+      ],
+      "id": "4e673077-0eab-4f89-b21e-ee5e1a1bfeb7",
+      "name": "Sync epic features",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -31680,
+        22096
+      ],
+      "id": "ea2a2071-0398-4081-90c7-18ec4a85a0f4",
+      "name": "Stop and Error20"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM n8n_chat_histories\nWHERE session_id LIKE '%' || $1\n  AND (message->>'type' = 'tool'\n       OR (message->>'type' = 'ai' AND jsonb_typeof(message->'content') = 'array'))",
+        "options": {
+          "queryReplacement": "={{ [ $('When Executed by Another Workflow').first().json.channel_id + '-epics' ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -32688,
+        22320
+      ],
+      "id": "8f35714d-dd63-4a1d-b8c7-557f72f3e22b",
+      "name": "Clean tool turns from memory",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "pinData": {},
@@ -1395,7 +1329,7 @@
             "index": 0
           },
           {
-            "node": "Get focus epic",
+            "node": "Get focus & next epic",
             "type": "main",
             "index": 0
           }
@@ -1441,7 +1375,7 @@
             "index": 0
           },
           {
-            "node": "Get focus epic",
+            "node": "Get focus & next epic",
             "type": "main",
             "index": 0
           }
@@ -1533,7 +1467,7 @@
             "index": 0
           },
           {
-            "node": "Split Out",
+            "node": "Sync epic features",
             "type": "main",
             "index": 0
           }
@@ -1559,22 +1493,9 @@
             "node": "Hide EPICS_COMPLETE1",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Get focus epic": {
-      "main": [
-        [
+          },
           {
-            "node": "Merge context",
-            "type": "main",
-            "index": 1
-          }
-        ],
-        [
-          {
-            "node": "Stop and Error4",
+            "node": "Clean tool turns from memory",
             "type": "main",
             "index": 0
           }
@@ -1611,24 +1532,6 @@
         [
           {
             "node": "Stop and Error17",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Insert features",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Stop and Error11",
             "type": "main",
             "index": 0
           }
@@ -1739,7 +1642,13 @@
             "index": 0
           }
         ],
-        [],
+        [
+          {
+            "node": "Send to Slack1",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Stop and Error15",
@@ -1755,18 +1664,6 @@
         [
           {
             "node": "Stop and Error9",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert features": {
-      "main": [
-        [],
-        [
-          {
-            "node": "Stop and Error12",
             "type": "main",
             "index": 0
           }
@@ -1820,6 +1717,58 @@
         [
           {
             "node": "Call 'Sub workflow - PO Assistant - 07 Jira integration'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get focus & next epic": {
+      "main": [
+        [
+          {
+            "node": "Merge context",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_epics": {
+      "ai_tool": [
+        [
+          {
+            "node": "Epics creator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_epic_features": {
+      "ai_tool": [
+        [
+          {
+            "node": "Epics creator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync epic features": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error20",
             "type": "main",
             "index": 0
           }

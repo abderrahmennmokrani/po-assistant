@@ -410,8 +410,10 @@
           "value": "={{ $('Slack Trigger').item.json.channel }}",
           "mode": "id"
         },
-        "text": "=👀 Message received, processing…",
-        "otherOptions": {}
+        "text": "=👀 Message received, processing…\n*Please wait for the agent response before sending any feedback.*",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,

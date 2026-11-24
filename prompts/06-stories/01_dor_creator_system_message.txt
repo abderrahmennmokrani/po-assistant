@@ -18,7 +18,7 @@ Objective: {{ $json.objective }}
 Propose a short DoR made of:
 - these 3 base rules, about the format of a story, adapted to the language of the PO (roles named exactly as given in the Roles above):
   1. The story is written as "As a [role], I want [precise action], so that [benefit]" (in the PO's language), with the role named exactly as validated.
-  2. The story has at least two acceptance criteria, each written as "Given… When… Then…" (in the PO's language).
+  2. The story has at least two acceptance criteria, each written as a short testable statement (in the PO's language).
   3. Any missing information is flagged "(à confirmer)".
 - plus at most 3 rules specific to this project, only when the Context clearly supports them (for example: the vision stresses privacy, so a rule about where the data stays). Never invent a compliance rule, a threshold, a delay, a tool or a process. When in doubt, add nothing.
 Never put the INVEST principles in the proposal. Each rule is one sentence, objective, at functional level, and concerns stories only: never mention a specific epic, feature or story.

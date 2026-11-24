@@ -38,8 +38,7 @@ CREATE TABLE IF NOT EXISTS roles (
 );
 
 -- Roadmap: one row per project (vision, objective, journey, assumptions) written once the
--- Product Owner has validated the roadmap. "epics" keeps the brief epic list generated with it
--- (title, horizon, brief description); the epics table holds one row per epic.
+-- Product Owner has validated the roadmap. The epics table holds one row per epic.
 CREATE TABLE IF NOT EXISTS roadmaps (
     id           SERIAL PRIMARY KEY,
     project_id   INTEGER NOT NULL REFERENCES projects(id),
@@ -49,51 +48,47 @@ CREATE TABLE IF NOT EXISTS roadmaps (
     assumptions  TEXT NOT NULL DEFAULT '',
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-    epics        JSONB NOT NULL DEFAULT '[]'::jsonb,
     UNIQUE (project_id)
 );
 
--- Epics are inserted as 'draft' when the roadmap is validated (priority = rank inside the horizon).
--- Workflow 04 develops the Now epics one at a time (description, rules, measures) and sets
--- them to 'validated'. Next and Later epics keep their brief description.
+-- Epics are inserted as 'draft' when the roadmap is validated, with a priority and a horizon.
+-- Workflow 04 develops the Now epics one at a time (the description holds the epic text: description,
+-- rules and success measures) and sets them to 'validated'. Next and Later epics keep their brief
+-- description. priority is one of Highest, High, Medium, Low, Lowest.
 CREATE TABLE IF NOT EXISTS epics (
     id          SERIAL PRIMARY KEY,
     project_id  INTEGER NOT NULL REFERENCES projects(id),
     roadmap_id  INTEGER NOT NULL REFERENCES roadmaps(id) ON DELETE CASCADE,
-    priority    INTEGER NOT NULL CHECK (priority > 0),
+    priority    TEXT NOT NULL CHECK (priority IN ('Highest', 'High', 'Medium', 'Low', 'Lowest')),
     title       TEXT NOT NULL,
     horizon     TEXT NOT NULL CHECK (horizon IN ('Now', 'Next', 'Later')),
     description TEXT NOT NULL,
     status      TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'validated')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    rules       TEXT[] NOT NULL DEFAULT '{}',
-    measures    TEXT[] NOT NULL DEFAULT '{}',
-    jira_ticket_id TEXT,  -- Jira issue id, written by workflow 07 (NULL = not pushed yet)
-    UNIQUE (roadmap_id, horizon, priority)
+    jira_ticket_id TEXT   -- Jira issue id, written by workflow 07 (NULL = not pushed yet)
 );
 
--- Features are inserted as 'draft' (title, description, priority 1 = highest) from the functional
--- building blocks of a validated epic. Workflow 05 develops them one at a time (description,
--- rules, steps) and sets them to 'validated'.
+-- Features are inserted as 'draft' (title, description, priority) when an epic is validated in
+-- workflow 04. Workflow 05 develops them one at a time (value and product rules, stored in
+-- description) and sets them to 'validated'. priority is one of Highest, High, Medium, Low, Lowest.
 CREATE TABLE IF NOT EXISTS features (
     id          SERIAL PRIMARY KEY,
     project_id  INTEGER NOT NULL REFERENCES projects(id),
     epic_id     INTEGER NOT NULL REFERENCES epics(id) ON DELETE CASCADE,
     title       TEXT NOT NULL,
     description TEXT NOT NULL,
-    priority    SMALLINT CHECK (priority >= 1 AND priority <= 3),
-    rules       TEXT[] DEFAULT '{}',
+    priority    TEXT CHECK (priority IN ('Highest', 'High', 'Medium', 'Low', 'Lowest')),
     status      TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'validated')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    steps       TEXT[] NOT NULL DEFAULT '{}',
     jira_ticket_id      TEXT,  -- Jira issue id of the feature (workflow 07)
     epic_jira_ticket_id TEXT   -- Jira issue id of its epic, so the feature can be created under it
 );
 
--- The steps of a validated feature are stored as draft user stories. Workflow 06 writes the
--- statement and acceptance criteria of each story (in description) and sets it to 'validated'.
+-- The stories of a feature are inserted as 'draft' (title, description, priority) when the feature is
+-- validated in workflow 05. Workflow 06 writes the statement and acceptance criteria of each story
+-- (in description) and sets it to 'validated'. priority: Highest, High, Medium, Low, Lowest.
 CREATE TABLE IF NOT EXISTS stories (
     id          SERIAL PRIMARY KEY,
     project_id  INTEGER NOT NULL REFERENCES projects(id),
@@ -101,6 +96,7 @@ CREATE TABLE IF NOT EXISTS stories (
     feature_id  INTEGER NOT NULL REFERENCES features(id),
     title       TEXT NOT NULL,
     description TEXT NOT NULL,
+    priority    TEXT CHECK (priority IN ('Highest', 'High', 'Medium', 'Low', 'Lowest')),
     status      TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'validated')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -162,3 +158,20 @@ CREATE TRIGGER stories_set_updated_at BEFORE UPDATE ON stories
 -- ALTER TABLE epics    ADD COLUMN IF NOT EXISTS jira_ticket_id TEXT;
 -- ALTER TABLE features ADD COLUMN IF NOT EXISTS jira_ticket_id TEXT, ADD COLUMN IF NOT EXISTS epic_jira_ticket_id TEXT;
 -- ALTER TABLE stories  ADD COLUMN IF NOT EXISTS jira_ticket_id TEXT, ADD COLUMN IF NOT EXISTS feature_jira_ticket_id TEXT, ADD COLUMN IF NOT EXISTS epic_jira_ticket_id TEXT;
+
+-- Upgrading an existing database from v1.2.x to v1.3.0.
+-- Priorities become text labels (Highest, High, Medium, Low, Lowest). Existing numeric priorities are
+-- mapped by rank (epics: 1 Highest, 2 High, 3 Medium, 4 Low, else Lowest; features: 1 High, 2 Medium, 3 Low); adjust if needed. The rules, measures and steps columns
+-- and the epics column of roadmaps are no longer used.
+-- ALTER TABLE epics DROP CONSTRAINT IF EXISTS epics_priority_check;
+-- ALTER TABLE epics DROP CONSTRAINT IF EXISTS epics_roadmap_id_horizon_priority_key;
+-- ALTER TABLE epics ALTER COLUMN priority TYPE TEXT USING CASE priority WHEN 1 THEN 'Highest' WHEN 2 THEN 'High' WHEN 3 THEN 'Medium' WHEN 4 THEN 'Low' ELSE 'Lowest' END;
+-- ALTER TABLE epics ADD CONSTRAINT epics_priority_check CHECK (priority IN ('Highest', 'High', 'Medium', 'Low', 'Lowest'));
+-- ALTER TABLE features DROP CONSTRAINT IF EXISTS features_priority_check;
+-- ALTER TABLE features ALTER COLUMN priority TYPE TEXT USING CASE priority WHEN 1 THEN 'High' WHEN 2 THEN 'Medium' WHEN 3 THEN 'Low' END;
+-- ALTER TABLE features ADD CONSTRAINT features_priority_check CHECK (priority IN ('Highest', 'High', 'Medium', 'Low', 'Lowest'));
+-- ALTER TABLE stories  ADD COLUMN IF NOT EXISTS priority TEXT CHECK (priority IN ('Highest', 'High', 'Medium', 'Low', 'Lowest'));
+-- Optional cleanup of unused columns:
+-- ALTER TABLE epics DROP COLUMN IF EXISTS rules, DROP COLUMN IF EXISTS measures;
+-- ALTER TABLE features DROP COLUMN IF EXISTS rules, DROP COLUMN IF EXISTS steps;
+-- ALTER TABLE roadmaps DROP COLUMN IF EXISTS epics;

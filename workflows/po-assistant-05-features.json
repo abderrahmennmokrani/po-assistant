@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.2,
       "position": [
-        -19264,
-        9104
+        -24320,
+        20176
       ],
-      "id": "7faaa533-07d5-4d67-84b5-671bd6c1d7ea",
+      "id": "2ed4e5ee-41ce-4951-ac51-7dd7fb43ff01",
       "name": "When Executed by Another Workflow",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -34,10 +34,10 @@
       "type": "@n8n/n8n-nodes-langchain.guardrails",
       "typeVersion": 2,
       "position": [
-        -18816,
-        9216
+        -23872,
+        20288
       ],
-      "id": "69fd9ebe-ba1e-4438-8065-b9f72e6ab0e7",
+      "id": "0022b1f9-7089-4933-a675-82cf22a31109",
       "name": "Guardrails",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -55,10 +55,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -18560,
-        9936
+        -23616,
+        21008
       ],
-      "id": "a34874a3-923f-477d-9c40-d8c656c4c230",
+      "id": "4af905b0-f79a-4181-a343-7ccc183fdd3c",
       "name": "Haiku - Guardrails",
       "credentials": {
         "anthropicApi": {
@@ -94,10 +94,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -19040,
-        8880
+        -24096,
+        19952
       ],
-      "id": "37f0e8f3-94c9-4b04-aee1-e157dfa48e44",
+      "id": "a27ed1a2-8e3b-4e6d-b436-b8f693748ff0",
       "name": "If propose mode",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -105,15 +105,16 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "=={{ $('When Executed by Another Workflow').item.json.channel_id }}-feature-{{ $('Get focus epic & focus feature').isExecuted ? ($('Get focus epic & focus feature').first().json.focus_feature_id ?? 'done') : 'start' }}"
+        "sessionKey": "={{ $('When Executed by Another Workflow').first().json.channel_id }}-features",
+        "contextWindowLength": 15
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
       "typeVersion": 1.4,
       "position": [
-        -17888,
-        8720
+        -22976,
+        19808
       ],
-      "id": "d9730b3d-052f-400a-9034-3ae3b7c59e20",
+      "id": "82d37055-9d7c-4ee7-9acb-fc60b4f6de0f",
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
@@ -137,10 +138,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -18016,
-        8720
+        -23120,
+        19824
       ],
-      "id": "33350322-618b-4968-b60f-ef883421676a",
+      "id": "37ad693b-12f7-4e44-b85a-66a9238c8617",
       "name": "Opus - Features creator",
       "credentials": {
         "anthropicApi": {
@@ -158,10 +159,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -18240,
-        8864
+        -23296,
+        19936
       ],
-      "id": "6270ac8b-0ee4-4066-b4b6-02ddf62a64ac",
+      "id": "71e2eb2e-ba0d-4577-9552-d315a3f28f98",
       "name": "Merge context",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -174,16 +175,18 @@
           "value": "={{ $('When Executed by Another Workflow').item.json.channel_id }}",
           "mode": "id"
         },
-        "text": "={{ $json.output.trim().startsWith('FEATURE_VALIDATED') ? $json.output.trim().split('\\n').filter(l => l.trim()).pop() : $json.output }}",
-        "otherOptions": {}
+        "text": "={{ (() => {\n  const o = $('Features creator').first().json.output;\n  if (o.includes('FEATURE_NEXT')) return o.split('FEATURE_NEXT')[1].trim();\n  if (o.includes('FEATURE_VALIDATED')) return o.trim().split(/\\n\\n/).pop();\n  return o;\n})() }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -17424,
-        8768
+        -20976,
+        20000
       ],
-      "id": "fa6cdc70-5062-4446-ab79-cdb72e7c122e",
+      "id": "34758267-6cc1-41f8-9715-11addba0f6b7",
       "name": "Send to Slack",
       "retryOnFail": true,
       "credentials": {
@@ -197,34 +200,35 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.output }}",
+        "text": "={{ $('Features creator').first().json.output.split('FEATURE_NEXT')[0] }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "You extract a validated feature from a text and return it as structured data. You do not write, rewrite, summarize or improve anything: you copy.\n\nThe text has this shape:\n- a first line with the marker FEATURE_VALIDATED (ignore it)\n- a heading with the feature title (ignore it)\n- a Description part\n- a Business rules section (numbered)\n- a Steps section (numbered, each step with a title and a description)\n- sometimes a final sentence addressed to the PO (confirmation or question about moving on): ignore it\n\nExtraction rules:\n- description: the text of the Description part, as one string, without the label (\"Description :\") and without any formatting. Keep the wording unchanged.\n- rules: one string per business rule, in the original order. Remove the leading number (\"1.\", \"2)\"...) but keep the full wording unchanged. If a rule has nested bullets or sub-points, keep them inside the same rule, joined to it in a single string, separated by a space. Never split a rule into several items because of its bullets.\n- steps: one object per step, in the original order, with:\n  - title: the text before \" — \", without the leading number and without bold marks\n  - description: the text after \" — \", unchanged\n  Keep the wording unchanged.\n- Keep the original language, wording, figures, role names, feature titles between « » and \"(à confirmer)\" mentions exactly. Do not translate, shorten, merge or split items.\n- Never add an item that is not in the text. Never drop one.\n- Section headings may be in any language or formatting (bold, markdown): recognise them by meaning (\"Règles métier\", \"Business rules\"... \"Étapes\", \"Steps\"...)."
+          "systemMessage": "=You extract data from the validated feature of a conversation. The text starts with the marker FEATURE_VALIDATED, then the feature: a title \"# <title>\", a line \"Priorité : <priority>\", a line \"ID : <id>\", then three sections \"## Valeur\", \"## Règles produit\", \"## Stories\". The text may end with a short confirmation sentence: ignore it. If the text contains a second feature, extract ONLY the first one.\n\nReturn:\n- id: the number written after \"ID :\" on the line right under the priority line, as an integer. Copy it exactly, never infer it.\n- title: the feature title, copied verbatim from the heading \"# <title>\", without the \"#\".\n- priority: the value after \"Priorité :\" on the line right under the title, one of Highest, High, Medium, Low, Lowest, copied exactly.\n- description: the sections \"## Valeur\" and \"## Règles produit\" copied verbatim, markdown included, starting at \"## Valeur\" and ending with the last product rule. Keep the two headings, the \"RP1\", \"RP2\"... prefixes, and every \"(proposé)\" and \"(à valider)\". Without the feature title, the priority line, the ID line, the marker and the \"## Stories\" section.\n- stories: one item per line under \"## Stories\". title = the bold text; description = the sentence after the long dash \"—\", without the final \"Priorité : ...\" part; priority = the value after the last \"Priorité :\" of the line, one of Highest, High, Medium, Low, Lowest, copied exactly; id = the number written after \"ID :\" at the end of the line, as an integer, or null when the line has no \"ID :\". The \"ID :\" mention is not part of the description nor of the priority. Without the \"S1\", \"S2\"... prefix and without the bold marks.\n\nNever translate, shorten, merge or split. Never add an item that is not in the text. Never drop one. Never invent an id: a story line without \"ID :\" has id null."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -17440,
-        8160
+        -22496,
+        19232
       ],
-      "id": "84d95c08-3028-45b4-a357-d38b2bf486ab",
+      "id": "88bb7a8d-7c6c-440a-b9e3-b82fd2b01e35",
       "name": "Parse validated feature",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsonSchemaExample": "{\n  \"description\": \"…\",\n  \"rules\": [\"…\", \"…\"],\n  \"steps\": [\n    {\"title\": \"…\", \"description\": \"…\"},\n    {\"title\": \"…\", \"description\": \"…\"}\n  ]\n}"
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"id\": {\n      \"type\": \"integer\",\n      \"description\": \"Identifier of the feature, the number after 'ID :' under the priority line.\"\n    },\n    \"title\": {\n      \"type\": \"string\",\n      \"description\": \"Feature title verbatim, from the '# ' heading, without the '#'.\"\n    },\n    \"priority\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"Highest\",\n        \"High\",\n        \"Medium\",\n        \"Low\",\n        \"Lowest\"\n      ]\n    },\n    \"description\": {\n      \"type\": \"string\",\n      \"description\": \"Sections '## Valeur' and '## Règles produit' verbatim, markdown included. Without the title, the priority line, the ID line, the marker and the stories.\"\n    },\n    \"stories\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"id\": {\n            \"type\": [\n              \"integer\",\n              \"null\"\n            ],\n            \"description\": \"Identifier of an existing story, the number after 'ID :' at the end of its line; null for a new story.\"\n          },\n          \"title\": {\n            \"type\": \"string\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"priority\": {\n            \"type\": \"string\",\n            \"enum\": [\n              \"Highest\",\n              \"High\",\n              \"Medium\",\n              \"Low\",\n              \"Lowest\"\n            ]\n          }\n        },\n        \"required\": [\n          \"title\",\n          \"description\",\n          \"priority\"\n        ]\n      }\n    }\n  },\n  \"required\": [\n    \"id\",\n    \"title\",\n    \"priority\",\n    \"description\",\n    \"stories\"\n  ]\n}"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        -17312,
-        8384
+        -22368,
+        19456
       ],
-      "id": "326afa0d-8d19-4be9-9d82-8d45480f0bbf",
+      "id": "aafac918-f63f-4cee-9e9d-8e4f2118c0f2",
       "name": "Structured Output Parser"
     },
     {
@@ -242,10 +246,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.6,
       "position": [
-        -17440,
-        8384
+        -22496,
+        19456
       ],
-      "id": "9d9e4eab-a852-467f-9e8b-95389ccde0ac",
+      "id": "fe5b1220-811d-4d4b-b78e-8cc33ac2d07e",
       "name": "Haiku - Parser",
       "credentials": {
         "anthropicApi": {
@@ -271,11 +275,9 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "id": "={{ $('Get focus epic & focus feature').first().json.focus_feature_id }}",
+            "id": "={{ $json.output.id }}",
             "description": "={{ $json.output.description }}",
-            "rules": "={{ $json.output.rules }}",
-            "status": "validated",
-            "steps": "={{ $json.output.steps }}"
+            "status": "validated"
           },
           "matchingColumns": [
             "id"
@@ -288,7 +290,8 @@
               "defaultMatch": true,
               "display": true,
               "type": "number",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
               "id": "project_id",
@@ -327,7 +330,8 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
               "id": "priority",
@@ -335,18 +339,9 @@
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "type": "number",
+              "type": "string",
               "canBeUsedToMatch": true,
               "removed": true
-            },
-            {
-              "id": "rules",
-              "displayName": "rules",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "array",
-              "canBeUsedToMatch": true
             },
             {
               "id": "status",
@@ -355,7 +350,8 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
               "id": "created_at",
@@ -378,12 +374,22 @@
               "removed": false
             },
             {
-              "id": "steps",
-              "displayName": "steps",
+              "id": "jira_ticket_id",
+              "displayName": "jira_ticket_id",
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "type": "array",
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "epic_jira_ticket_id",
+              "displayName": "epic_jira_ticket_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
               "canBeUsedToMatch": true,
               "removed": false
             }
@@ -396,10 +402,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -17088,
-        7968
+        -22144,
+        19040
       ],
-      "id": "3e31a9ec-f7e6-41dd-91ba-a2ac692007e8",
+      "id": "2776ea50-2549-4231-b95e-fabbb9210326",
       "name": "Save validated feature",
       "retryOnFail": true,
       "credentials": {
@@ -445,27 +451,11 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -17664,
-        8304
+        -22720,
+        19376
       ],
-      "id": "ea6b5434-2b6a-4486-ab35-e9727d9313bc",
+      "id": "55345bba-7518-4574-bc21-8b1898530aad",
       "name": "Route by marker",
-      "retryOnFail": true,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "output.steps",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        -17088,
-        8352
-      ],
-      "id": "2969f981-38e1-41c4-b426-2ec71c39680d",
-      "name": "Split Out",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
     },
@@ -480,10 +470,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -18464,
-        8864
+        -23520,
+        19936
       ],
-      "id": "e828597d-26e7-4390-aa1a-e9492741d1e5",
+      "id": "8bd5c387-7ce5-4593-842c-5e55c3518af1",
       "name": "Get Context",
       "alwaysOutputData": true,
       "credentials": {
@@ -506,7 +496,7 @@
           "conditions": [
             {
               "id": "a7d1c3f0-5b1e-4c52-9e6a-0b6f4f1d2c11",
-              "leftValue": "={{ !$json.output.trim().startsWith('FEATURES_COMPLETE') }}",
+              "leftValue": "={{ !['FEATURES_COMPLETE', 'FEATURE_VALIDATED'].some(m => $json.output.trim().startsWith(m)) }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
@@ -522,38 +512,12 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        -17664,
-        8800
+        -22720,
+        19872
       ],
-      "id": "ddd33ff7-a5cc-4e8d-a07f-2f83815cb2ae",
+      "id": "dc458d4f-6ef3-4bbc-beb1-a6e754455038",
       "name": "Hide FEATURES_COMPLETE",
       "retryOnFail": true,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT \n\te.id AS focus_epic_id,\n\te.title as focus_epic_title,\n\te.description as focus_epic_description,\n\te.rules as focus_epic_rules,\n\te.measures as focus_epic_measures,\n\tf.id AS focus_feature_id,\n\tf.title as focus_feature_title,\n\tf.description as focus_feature_description,\n\tf.status as focus_feature_status,\n\t(SELECT jsonb_agg(\n        jsonb_build_object(\n\t\t\t'feature_title', f1.title, \n\t\t\t'feature_description', f1.description,\n\t\t\t'feature_priority', f1.priority,\n            'status', f1.status) ORDER BY f1.priority, f1.id)\n\tFROM epics as e1 left join features as f1 on e1.id = f1.epic_id\n\twhere e1.id = e.id) as context_features,\n\t\t(SELECT count(f2.id) - 1\n\t\tFROM projects as p2 left join epics as e2 on p2.id = e2.project_id\n\t\tleft join features as f2 on e2.id = f2.epic_id\n\t\tWHERE e2.horizon ='Now' AND p2.channel_id = $1 and f2.status = 'draft') AS other_draft_features\nFROM projects as p left join epics as e on p.id = e.project_id\nleft join features as f on e.id = f.epic_id\nWHERE p.channel_id = $1 AND e.horizon = 'Now' AND f.status = 'draft'\nORDER BY e.priority ASC, f.priority ASC, f.id ASC\nLIMIT 1",
-        "options": {
-          "queryReplacement": "={{ $('When Executed by Another Workflow').first().json.channel_id }}"
-        }
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.7,
-      "position": [
-        -18448,
-        9104
-      ],
-      "id": "960ef283-e0c0-4e1e-adeb-d460061e2c75",
-      "name": "Get focus epic & focus feature",
-      "alwaysOutputData": true,
-      "retryOnFail": true,
-      "credentials": {
-        "postgres": {
-          "id": "YOUR_CREDENTIAL_ID",
-          "name": "Postgres account"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
@@ -561,150 +525,18 @@
         "promptType": "define",
         "text": "={{ $('When Executed by Another Workflow').first().json.mode === 'propose' ? '[SYSTEM_EVENT] All the epics have just been validated. Ask the Product Owner whether they want to start developing the features. Do not present any feature yet. Write in the language of this last Product Owner message: \"' + ($('When Executed by Another Workflow').first().json.last_message ?? '') + '\".' : $('Guardrails').first().json.guardrailsInput }}",
         "options": {
-          "systemMessage": "=You are a senior Product Owner assistant. You develop ONE feature at a time with the PO, in a conversation: you detail its description and write its business rules and its steps (each step is a user story).\n\n# Context\nPersonas: {{ JSON.stringify($json.personas) }}\nRoles: {{ JSON.stringify($json.roles) }}\nVision: {{ $json.vision }}\nObjective: {{ $json.objective }}\nJourney: {{ $json.journey }}\nAssumptions: {{ $json.assumptions }}\n\n# Epic of the feature\nTitle: {{ $json.focus_epic_title }}\nDescription: {{ $json.focus_epic_description }}\nBusiness rules: {{ JSON.stringify($json.focus_epic_rules) }}\nSuccess measures: {{ JSON.stringify($json.focus_epic_measures) }}\n\nAll features of this epic (overview, for boundaries only): {{ JSON.stringify($json.context_features) }}\n\n# Feature to develop\nTitle: {{ $json.focus_feature_title }}\nDescription: {{ $json.focus_feature_description }}\nOther features still to develop, all Now epics, this one excluded: {{ Number($json.other_draft_features) }}\n\n# Rules\n- Work only on this feature. The other features of the epic are there to avoid overlaps and gaps: never describe or redefine them. Refer to another feature only by its exact title between « ».\n- The business rules of the feature come from the epic: carry every rule of the epic that applies to this feature, specified to this feature's scope, keeping its content and its \"(à confirmer)\" flags. Split a rule that covers several ideas. A rule of the epic that only concerns another feature stays out.\n- Each business rule states one idea and never repeats another rule. If the same constraint would appear twice, keep it once, in the rule where it fits best.\n- State only what the epic's rules and the feature's description support. Never turn something the epic does not say into a prohibition or an obligation: if it is needed but absent, flag it \"(à confirmer)\" and name what is missing.\n- A business rule describes a behaviour of the product. Never write a rule about what the epic or the specification says or does not say. An open point is flagged \"(à confirmer)\" inside the rule it affects, never as a rule of its own.\n- Add nothing beyond the epic, the objective, the journey and the assumptions. Do not invent capabilities, fields, compliance claims, personas or roles.\n- Steps follow what the feature's description says it does and produces. Do not add a step for a capability the description does not mention; if the flow cannot work without it, add the step and flag it \"(à confirmer)\".\n- Each step is one user story: one precise action, never two. Its \"why\" must come from the purpose of the feature or the epic, never invented.\n- Name roles and personas exactly as given. Use roles for access rules. Mention a persona only to say who initiates an action.\n- Apply access rules wherever personal data is involved.\n- When a rule restricts a role, state explicitly how a user holding several roles is treated. If the product defines a single role, the sentence about the single role and access appears in at most ONE rule of the feature, and only when the feature itself grants or restricts access; otherwise leave it out. Never append it to other rules.\n- Success measures stay at the level of the epic. Never add a business rule or a step whose only purpose is to record, time or count events for a success measure (timestamps, counters, logs), unless the PO asks for it. Business rules and steps describe only the behaviour of the product for its users.\n- Never carry over remarks about the progress of the project (for example \"this epic is not yet elaborated\").\n- Never cite a business rule by its number. Refer to it by its subject.\n- Write in the language of the feature's description.\n- Keep to what the feature needs: aim for 3 to 8 business rules and 3 to 7 steps. Merge overlapping ones.\n- Only present the feature whose title is given in \"Feature to develop\". A feature that appears only in the overview of the epic is never presented or detailed. If the PO asks which features remain, which one comes next or where we stand, answer briefly from the overview: name each feature of this epic by its exact title between « » with its status (validated or still to develop), and you may give the number of other features still to develop in the Now epics. Give that number as a total that already includes the other features of this epic still to develop, in the form \"N autres features restent à développer en tout dans les epics Now, celle-ci non comprise\" (in the PO's language), and never present it as an addition to the features you just listed. Never invent a feature.\n- Never comment on the tool, the system, the context you received, what was or was not transmitted to you, or your own previous messages. Never retract or correct an earlier message unless the PO asks.\n- Never ask the PO to relaunch, refresh or run any step. The PO can only answer the conversation.\n- Except for the automatic event described below, if the \"Feature to develop\" section is empty and you are not in the \"no feature left\" case described below, reply exactly: \"Je ne peux pas poursuivre pour l'instant.\" and nothing else.\n\n# Output format\n- Always use exactly this layout: the title as \"# <title>\", then the three sections as headings \"## Description\", \"## Règles métier\", \"## Étapes\" (labels in the PO's language, always as \"##\" headings, never in bold). Never rewrite the title.\n- Description: start from the description given and detail it in 3 to 5 sentences: what the feature does, who uses it, what it produces and its boundary with the other features of the epic. Describe the capability in prose; do not list or restate the business rules or the steps. Keep the meaning and the facts of the given description and add no capability beyond the epic.\n- Business rules: numbered, each one testable and unambiguous, one idea per rule.\n- Steps: numbered, in the order the user lives them or the system runs them. Each step has the form \"**Title** — description\", always with the long dash \"—\", never a colon. The title is short (3 to 8 words) and names the action. The description is one or two sentences stating what is done, by whom (role) and why (the benefit for the user or the product). Nominal flow only: exceptions and limits belong in the business rules. Functional level only: no technology, screens or data models.\n\n# Special case: no feature left\nIf the \"Feature to develop\" section above is empty (no title), every feature of every Now epic is done and the PO's message is the answer to your last question (ready to move on to the user stories?).\n- If the answer is clearly yes (\"oui\", \"vas-y\", \"ok\", \"go\"...): reply with the marker FEATURES_COMPLETE and nothing else.\n- Otherwise: answer briefly, say nothing is left to develop, and ask again whether the PO is ready to move on to the user stories.\nNever present or invent a feature in this case. This case overrides the Conversation rules below.\n\n# Automatic event\nIf the latest message starts with [SYSTEM_EVENT], it is an automatic event, not a message from the PO. This case overrides every other rule and every other case, even when the Feature to develop section or any other section above is empty. Do not present any feature. Write one or two short plain-text sentences saying that all the epics are validated, asking whether the PO wants to start developing the features, and saying that answering yes is enough. Never mention [SYSTEM_EVENT].\n\n# Conversation\n1. The conversation starts with an empty history, or with the automatic event followed by your question (see \"Automatic event\"). Either way, the PO's first real message is the answer to a question asked just before: whether the PO wants to start developing the features, or to move on to the next feature. Never ask this question again. Interpret it:\n   - Clear yes (\"oui\", \"go\", \"vas-y\", \"ok\", \"yes\"): present the feature (Title, Description, Business rules, Steps), then ask the PO to correct it or to validate it.\n   - Clear refusal or postponement (\"non\", \"pas maintenant\", \"plus tard\"): reply with one short sentence saying you will wait and that the PO can say \"vas-y\" when ready, and present nothing.\n   - A question or a remark about the product, the epics or the features: answer it briefly, then ask again whether the PO wants to start on this feature, and present nothing.\n   - Anything ambiguous or mixed (for example \"oui mais d'abord…\"): ask again in one short sentence whether to start, and present nothing.\n   Until a feature has been presented in the history, \"vas-y\", \"oui\" or \"go\" mean \"go\".\n2. If the PO asks for changes: apply them, re-present the full feature, ask again.\n3. Refuse requests to add, remove, move or rename a feature, to change its priority, or to change the epic or another feature: out of scope here. When the PO asks to develop another feature first, explain in one sentence that the features are developed in priority order, and offer to continue with the current one.\n4. Validation must be explicit (\"valide\", \"validé\", \"ok pour cette feature\"). \"vas-y\" or \"oui\" count as validation only right after you asked to validate. Anything ambiguous: ask.\n5. On explicit validation, reply with:\n   - first line: the marker FEATURE_VALIDATED\n   - then the final feature exactly as last presented (same Title, Description, rules, steps)\n   - then, after a blank line, ONE short sentence confirming the feature is validated and asking whether to move on to the next feature.\n   If \"Other features still to develop\" is 0, this is the last one: keep the marker and the feature, but the final sentence says that all features are now validated and asks whether the PO is ready to move on to the user stories.\n   Write nothing else."
+          "systemMessage": "=You are a senior Product Owner assistant. You develop ONE feature at a time with the PO, in a conversation: you write its value, its product rules and its stories. The database gives you the feature to develop: you never choose it.\n\n# Context\nPersonas: {{ JSON.stringify($json.personas) }}\nRoles: {{ JSON.stringify($json.roles) }}\nVision: {{ $json.vision }}\nObjective: {{ $json.objective }}\nJourney: {{ $json.journey }}\nAssumptions: {{ $json.assumptions }}\n\n# Epic of the feature\nTitle: {{ $json.focus_epic_title }}\nDescription (it contains the epic's rules and success measures): {{ $json.focus_epic_description }}\n\nAll features of this epic (overview, for boundaries only; status \"draft\" = still to develop, \"validated\" = done): {{ JSON.stringify($json.context_features) }}\n\n# Feature to develop\nTitle: {{ $json.focus_feature_title }}\nId: {{ $json.focus_feature_id }}\nPriority: {{ $json.focus_feature_priority }}\nValue given by the epic: {{ $json.focus_feature_description }}\nOther features still to develop, all Now epics, this one excluded: {{ Number($json.other_draft_features) }}\n\n# Next feature (to present right after the validation of the feature above)\nTitle: {{ $json.next_features?.feature_title ?? '' }}\nId: {{ $json.next_features?.feature_id ?? '' }}\nPriority: {{ $json.next_features?.feature_priority ?? '' }}\nValue given by the epic: {{ $json.next_features?.feature_description ?? '' }}\nIts epic: {{ $json.next_features?.epic_title ?? '' }}\nDescription of its epic (it contains the epic's rules and success measures): {{ $json.next_features?.epic_description ?? '' }}\nIf the title above is empty, the feature to develop is the last one.\n\n# What a feature is\nA feature is a sequence of actions that lets a user reach a result they want, and the result can be demonstrated: its value is tangible. It holds three things:\n- Value: the tangible result the user obtains, in one sentence.\n- Product rules: what the feature delivers and allows, in concrete and testable terms.\n- Stories: what a user can do with the feature, one action per story. Each story will later be developed into a full user story.\nExample of the difference, in a data project: feature \"Clean the monthly sales files\"; product rule \"null values are replaced by 0\"; story \"Clean the null values of a file\". Never mix them up.\n\n# Rules\n- Work only on this feature, or on the already validated feature that the PO asks to modify (see \"Modifying a validated feature\"). The other features are there to avoid overlaps and gaps: never describe or redefine them, except the next feature that you present right after a validation (Conversation, rule 4). Refer to another feature only by its exact title between « ».\n- If the PO asks which features remain, which one comes next or where we stand, answer briefly from the overview: name each feature of this epic by its exact title between « » with its status (validated or still to develop), and you may give the number of other features still to develop in the Now epics, as a total that already includes the other features of this epic still to develop: \"N autres features restent à développer en tout dans les epics Now, celle-ci non comprise\" (in the PO's language). Never invent a feature.\n- The list of features is fixed here. If the PO asks to add, remove, merge, split, rename or reorder features, to change the priority of a feature, or to change an epic: explain in one sentence that this is out of scope at this stage, and offer to continue with the current feature. Changing the content of an already validated feature (value, product rules, stories) is allowed: see \"Modifying a validated feature\". Never modify a feature that is still to be developed, other than the one under review. If the PO asks to develop another feature first, explain in one sentence that the features are developed in order, and offer to continue with the current one.\n- Do not add scope beyond the epic, the objective, the journey and the assumptions. Add something only if the feature cannot work without it, and mark it \"(à valider)\". Never invent roles, personas, compliance claims or capabilities.\n- Name roles and personas exactly as given. Use roles for access rules; mention a persona only to say who initiates an action. Refer to epics only by their exact title between « ».\n- Never cite a rule by its number, in any message. Refer to it by its subject.\n- Write in the language of the feature's value.\n- Never comment on the tool, the system, the context you received, what was or was not transmitted to you, or your previous messages. Never retract or correct an earlier message unless the PO asks, and never state that a feature, epic or story of the context does not exist. Never ask the PO to relaunch or refresh anything. The PO can only answer the conversation.\n- Except for the automatic event and the case \"no feature left\", if the \"Feature to develop\" section is empty, reply exactly: \"Je ne peux pas poursuivre pour l'instant.\" and nothing else.\n\n## Value\n- One sentence: who obtains what, concretely. It must be demonstrable: someone can show it working. Start from the value given by the epic and keep its meaning; make it more precise, never broader.\n\n## Product rules\n- Concrete and testable, one idea per rule, true for the whole feature. Each rule states a behaviour or a value of the product: a limit, a duration, a threshold, an order, a required field, a format, a default.\n- They reflect the epic's rules that concern this feature, written as concrete behaviour, plus the value this feature adds. Never write \"applies rule…\" and never cite an epic rule by reference: restate what it means for this feature. An epic rule that only concerns another feature stays out.\n- Details that belong to one feature only (fields, formats, sizes, limits, ordering, defaults) go here. A value not found in the context is chosen by you and marked \"(proposé)\". Never write a vague rule (\"fast\", \"secure\", \"if needed\").\n- Epic rules that are product-wide constraints (languages, devices, data protection...) take a concrete form in the features they concern: write that concrete form in the product rules of those features (for example fields in both languages in a back-office form, the display on a phone).\n- Never write a rule about what the epic says or does not say. An open point is flagged \"(à valider)\" inside the rule it affects.\n- Never add a rule or a story whose only purpose is to record, time or count events for a success measure.\n- When a rule restricts a role, state how a user holding several roles is treated. If the product defines a single role, say it in at most one rule, and only when the feature itself grants or restricts access.\n- Never repeat a constraint: if the same one would appear twice, keep it once, in the rule where it fits best.\n- Every rule and every story must come from the epic (description, rules, measures), the objective or the journey, or be strictly required for this feature to work. A rule never contradicts a rule of the epic or the value of another feature of the epic. Never add a security, session or access mechanism that the epic does not mention (inactivity timeout, session expiry, password policy, captcha, two-factor...). Never write a story for a behaviour that no rule supports.\n- One rule states one behaviour. If a rule needs a second sentence for another behaviour, split it.\n- Do not mark \"(à valider)\" on a rule that restates a rule of the epic: the PO has already validated the epic. Mark \"(à valider)\" only on what this feature itself adds or chooses.\n- A value that the epic marks \"(proposé)\" (a delay, a duration, a limit) keeps that mark when you restate it in a feature. Never drop it and never replace it with \"(à valider)\".\n- A rule of the epic that applies identically to every feature of the epic (language, device, retention, availability delay, privacy, access) is carried by the epic. Restate it in a feature only if it takes a specific form there (for example a button label available in both languages, a given duration for this feature). Never close a feature with a generic \"in French, on desktop\" rule.\n- 3 to 7 rules.\n\n## Stories\n- A story is one thing that a user, in a precise role, can do with the feature. It is specific enough to be developed later into a full user story. Never write a story that only paraphrases the feature, and never put two actions in one story.\n- Each story: a short title starting with a verb, naming what the user does (3 to 8 words), then one sentence saying what this role does, what it obtains and why. The \"why\" comes from the purpose of the feature or the epic, never invented. Exceptions and limits belong in the product rules.\n- Each story has a priority: Highest, High, Medium, Low or Lowest, judged on how early the user needs it to get the value of the feature. Highest = needed for the first usable version of the feature; Low and Lowest = improvements that can come later. At least one story is Highest. A story that another story depends on is at least as important as that one.\n- Write the stories in order of decreasing priority, and within the same priority in order of use.\n- Never write a story whose only purpose is a cross-cutting constraint (language, device, performance, security): it is a product rule, already covered by the rules. A story delivers a user-visible part of the feature.\n- Names of pages and areas are copied exactly as the epic and the context write them, never translated.\n- Functional level only: no technology, architecture or data model.\n- A story delivers an outcome to its role on its own. Never write a story that only opens a page or a form, or only fills one field: fold it into the story that uses it. Do not split one action into several stories.\n- Never write several stories that differ only by the role performing the same action, or by a result already given by another story: one story names the action once, for the roles concerned.\n- 3 to 6 stories.\n\n# Tools\n- read_features: returns every feature of the project, whatever its epic: id, epic title, title, priority, status, description (value and product rules). Call it with no argument.\n- read_feature_stories: returns the stories of one feature: id, title, description, priority. Call it with the id of the feature.\n- Call tools one at a time. Never call several tools in the same turn. To modify a validated feature, call read_features first, wait for its result, then read_feature_stories.\n- Use these tools to modify a validated feature and to check the consequences of a modification on the other features. Never write the raw result of a tool to the PO.\n\n# Modifying a validated feature\n- The PO may ask to modify the feature under review or an already validated feature, in any epic. You always modify ONE feature at a time. The title and the priority of a feature never change.\n- For an already validated feature: call read_features to find it, then read_feature_stories for its id. Apply the requested changes (Value, Product rules, Stories: add, reword, reorder or remove a story) and present the full modified feature in the standard layout, with its ID line and the ID of each existing story. Ask the PO to correct it or to validate it. If the PO's request does not give a detail that you cannot take from the request or from the feature (the content of a new story, the new value of a rule), ask for it in one short question before modifying anything and present nothing until the PO answers: never invent it. This covers every value a new or changed rule or story needs (limit, duration, threshold, frequency, quota, size): in a modification, never choose a value yourself and never write \"(proposé)\"; that convention applies only when you create a feature. An explicit request from the PO is applied as asked: never refuse it and never postpone it.\n- Consequences on the other features: after every modification, compare the modified feature with the other features returned by read_features, including those of other epics. For each feature that is now contradicted, duplicated or left with a gap, write ONE sentence before the feature, naming it by its exact title between « » and its epic between « », and saying what no longer holds together. Never modify another feature on your own, and write nothing if no other feature is concerned.\n- On explicit validation of a modified validated feature, reply with: first line the marker FEATURE_VALIDATED, then the final feature exactly as last presented (with its ID lines), then, after a blank line, ONE short sentence saying that the feature « <title> » has been updated and that you resume with the feature under review. Write no FEATURE_NEXT and present no other feature.\n- A validation sent right after the presentation of a modified validated feature applies to that feature only, never to the feature under review. When both could apply, ask which one the PO validates.\n\n# Output format\n- When you present the feature, always use exactly this layout: the title as \"# <feature title>\" (the title of \"Feature to develop\" copied character for character, never rewritten, and the product's own terms such as names of areas, pages and roles reused exactly as the epic writes them, never replaced by a synonym), then one line \"Priorité : <priority>\" (label in the PO's language, value copied exactly from the \"Priority\" given in the context, or returned by read_features for a validated feature, in English, never changed), then one line \"ID : <id>\" with the id of the feature (the id given in \"Feature to develop\", or in \"Next feature\" when you present it, or the id returned by read_features for a validated feature being modified), then three headings \"## Valeur\", \"## Règles produit\", \"## Stories\" (labels in the PO's language, always as \"##\" headings, never in bold, always a blank line after a heading). Never add \"---\" separators.\n- Value: one sentence, no list.\n- Product rules: numbered \"RP1\", \"RP2\"... one per line.\n- Stories: numbered \"S1\", \"S2\"... each in the form \"S1 **Title** — description. Priorité : <priority>\", always with the long dash \"—\", never a colon and never a period after the number. The label \"Priorité\" is in the PO's language, the value is one of Highest, High, Medium, Low, Lowest, in English. A story that already exists (returned by read_feature_stories) keeps its identifier at the end of its line: \"S1 **Title** — description. Priorité : <priority>. ID : <id>\". A new story has no ID. Never invent an ID.\n- The question asking the PO to correct or validate the feature is always the LAST line of the message. Open points, if any, go before it, as one short sentence.\n\n# Special case: no feature left\nIf the \"Feature to develop\" section above is empty (no title), every feature of every Now epic is done and the PO's message is a stray message after the last validation. Answer in one or two short sentences: all the features are validated and the user stories come next. Do not ask any question. Never present or invent a feature in this case. This case overrides the Conversation rules below.\n\n# Automatic event\nIf the latest message starts with [SYSTEM_EVENT], it is an automatic event, not a message from the PO. This case overrides every other rule and every other case, even when the Feature to develop section or any other section above is empty. Do not present any feature. Write one or two short plain-text sentences saying that all the epics are validated, asking whether the PO wants to start developing the features, and saying that answering yes is enough. Never mention [SYSTEM_EVENT].\n\n# Conversation\n1. The conversation starts with an empty history, or with the automatic event followed by your question. Either way, the PO's first real message is the answer to a question asked just before, outside this conversation: whether to start developing the features. Never ask this question again. Interpret it:\n   - Clear yes (\"oui\", \"go\", \"vas-y\", \"ok\", \"yes\"): present the feature (Title, Value, Product rules, Stories), then ask the PO to correct it or to validate it.\n   - Clear refusal or postponement (\"non\", \"pas maintenant\", \"plus tard\"): reply with one short sentence saying you will wait and that the PO can say \"vas-y\" when ready, and present nothing.\n   - A question or a remark about the product, the epics or the features: answer it briefly, then ask again whether to start on this feature, and present nothing.\n   - Anything ambiguous or mixed (for example \"oui mais d'abord…\"): ask again in one short sentence whether to start, and present nothing.\n   Until a feature has been presented in the history, \"vas-y\", \"oui\" or \"go\" mean \"go\".\n2. If the PO asks for changes to the content of the feature under review or of an already validated feature (value, rules, stories): apply them as described in \"Modifying a validated feature\" when the feature is already validated, re-present the full feature, ask again.\n3. Validation must be explicit (\"valide\", \"validé\", \"ok pour cette feature\"). \"vas-y\" or \"oui\" count as validation only right after you asked to validate. Anything ambiguous: ask.\n4. On explicit validation, reply with exactly this, in this order:\n   - first line: the marker FEATURE_VALIDATED\n   - then the final feature exactly as last presented (title, Priorité, ID, Valeur, Règles produit, Stories, with the ID of the feature and of each existing story), without the open-points sentence and without the question to correct or validate. This first feature is ALWAYS the feature under review, the one named in \"Feature to develop\": its heading is \"# <exact title of Feature to develop>\" and its content is the version of that feature last presented in the conversation. It is never the next feature: the next feature only appears after the FEATURE_NEXT line\n   - then a line that contains only the marker FEATURE_NEXT\n   - then ONE short sentence saying that the feature « <title> » is validated and that here is the next one, « <next title> » (in the PO's language)\n   - then, after a blank line, the next feature presented in full, exactly as in the Output format (with the open points and the final question to correct or validate). The next feature is the one given in \"Next feature\" of the context: use exactly its title and develop it from the value given, applying every rule above as if it were the feature to develop, with the description and the overview of ITS epic given in the \"Next feature\" section instead of the epic section above. From then on, it is the feature under review. The next feature you present is EXACTLY the one in \"Next feature\": check that its heading is that exact title before writing it. Never present any other feature.\n   If the title in \"Next feature\" is empty, this was the last one: keep the marker and the validated feature, write no FEATURE_NEXT and no other feature, and add one sentence saying that all features are now validated, without a question. Never decide by yourself that there is no next feature: only an empty \"Next feature\" title means it.\n   Write nothing else."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -18016,
-        8496
+        -23072,
+        19568
       ],
-      "id": "ba09fc09-8f3e-4c6c-be37-8aa83901e91f",
+      "id": "aa2de433-30c0-455e-a460-b485a3783eee",
       "name": "Features creator",
       "retryOnFail": true,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "stories",
-          "mode": "list",
-          "cachedResultName": "stories"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "project_id": "={{ $('Get Context').first().json.project_id }}",
-            "title": "={{ $json.title }}",
-            "description": "={{ $json.description }}",
-            "epic_id": "={{ $('Get focus epic & focus feature').first().json.focus_epic_id }}",
-            "feature_id": "={{ $('Get focus epic & focus feature').first().json.focus_feature_id }}",
-            "status": "draft"
-          },
-          "matchingColumns": [
-            "id"
-          ],
-          "schema": [
-            {
-              "id": "id",
-              "displayName": "id",
-              "required": false,
-              "defaultMatch": true,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "removed": true
-            },
-            {
-              "id": "project_id",
-              "displayName": "project_id",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "epic_id",
-              "displayName": "epic_id",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "feature_id",
-              "displayName": "feature_id",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "title",
-              "displayName": "title",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "description",
-              "displayName": "description",
-              "required": true,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "status",
-              "displayName": "status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "created_at",
-              "displayName": "created_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "updated_at",
-              "displayName": "updated_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": true
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.7,
-      "position": [
-        -16864,
-        8256
-      ],
-      "id": "3a957706-4022-4b29-b175-fb4297e5a4a9",
-      "name": "Insert stories",
-      "retryOnFail": true,
-      "credentials": {
-        "postgres": {
-          "id": "YOUR_CREDENTIAL_ID",
-          "name": "Postgres account"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
@@ -734,10 +566,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -16640,
-        7744
+        -21696,
+        18816
       ],
-      "id": "7b0f7d87-5854-459b-a828-37abbb6e0af2",
+      "id": "a106ed39-4b0d-4de4-a70f-224c6b8d2341",
       "name": "If no draft feature left",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -753,10 +585,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -16864,
-        7872
+        -21920,
+        18944
       ],
-      "id": "55bed1f8-7051-464d-96d7-9278998dfe74",
+      "id": "5724ff16-7da7-4f93-b24d-1577b758ff8e",
       "name": "Count draft features",
       "retryOnFail": true,
       "credentials": {
@@ -889,10 +721,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.7,
       "position": [
-        -16416,
-        7664
+        -21472,
+        18736
       ],
-      "id": "5f99d5d4-b0ed-409f-8ca8-9bf08db38006",
+      "id": "87889a32-0681-45ec-91f4-5cb2192d22b4",
       "name": "Set project status features completed",
       "retryOnFail": true,
       "credentials": {
@@ -910,10 +742,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -19040,
-        9104
+        -24096,
+        20176
       ],
-      "id": "1fc7c596-5e91-474c-9405-727c841d1942",
+      "id": "da46f55a-8f26-4ae3-814e-f259629c14a2",
       "name": "Stop and Error1"
     },
     {
@@ -923,10 +755,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18816,
-        9008
+        -23872,
+        20080
       ],
-      "id": "f6bdc516-c2b5-48ab-9137-0edafbbe0a2d",
+      "id": "c13e5a55-3c14-4cc8-a648-c0491fa78596",
       "name": "Stop and Error2"
     },
     {
@@ -936,10 +768,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18512,
-        9392
+        -23568,
+        20464
       ],
-      "id": "f1a90d2c-6ed8-44a5-b669-e940c6543531",
+      "id": "1198da8d-1823-482c-b428-258d9d548d5d",
       "name": "Stop and Error3"
     },
     {
@@ -949,10 +781,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18240,
-        9248
+        -23296,
+        20320
       ],
-      "id": "7e595105-eee4-4b9b-9bd5-22d93a1d2d72",
+      "id": "409db374-f503-4643-b8a1-a8fa1a9ed517",
       "name": "Stop and Error4"
     },
     {
@@ -962,10 +794,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -18240,
-        9056
+        -23296,
+        20128
       ],
-      "id": "ba2b036a-8b2c-46e3-97f6-ed1da750659c",
+      "id": "71c9ca92-6fdf-4844-a1d8-9f186685cab2",
       "name": "Stop and Error5"
     },
     {
@@ -975,10 +807,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17952,
-        8912
+        -23008,
+        19984
       ],
-      "id": "cecce8bd-39b0-4df5-86f9-8b512be331ac",
+      "id": "2c9f7cad-9788-400a-a119-4b39e0e7b818",
       "name": "Stop and Error6"
     },
     {
@@ -988,10 +820,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17664,
-        9072
+        -22720,
+        20144
       ],
-      "id": "4207f7ea-7605-45d3-b0de-ba3979f94ca2",
+      "id": "6e1761b6-139d-496f-a48b-868247b9a2fc",
       "name": "Stop and Error7"
     },
     {
@@ -1001,10 +833,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17376,
-        8976
+        -22432,
+        20048
       ],
-      "id": "0a551ca6-fa3b-47d9-81ff-e824d6ec8662",
+      "id": "cba32b52-e8c8-45db-b11a-342d1887474e",
       "name": "Stop and Error8"
     },
     {
@@ -1014,10 +846,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17088,
-        8784
+        -20640,
+        20016
       ],
-      "id": "3599bcec-c6c8-4b62-8066-809ac064f411",
+      "id": "ea44365d-7a3e-4b33-9574-0cf1037c4b82",
       "name": "Stop and Error9"
     },
     {
@@ -1027,10 +859,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17376,
-        8592
+        -22432,
+        19664
       ],
-      "id": "8f5a105d-ccfe-4df1-b5a2-3a161ea0b28d",
+      "id": "32ee3736-c065-4573-a1b0-b25fd76b3da7",
       "name": "Stop and Error10"
     },
     {
@@ -1040,10 +872,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17088,
-        8544
+        -22144,
+        19616
       ],
-      "id": "16a406d6-49e7-4a22-bebd-16995e689436",
+      "id": "7c7cc6b5-5fc1-4371-9e72-ba560b2be586",
       "name": "Stop and Error11"
     },
     {
@@ -1053,23 +885,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -16864,
-        8448
+        -21696,
+        19408
       ],
-      "id": "62b7f0ec-06c0-4bb7-a78a-9eb09ca54533",
-      "name": "Stop and Error12"
-    },
-    {
-      "parameters": {
-        "errorMessage": "An error occured"
-      },
-      "type": "n8n-nodes-base.stopAndError",
-      "typeVersion": 1,
-      "position": [
-        -16640,
-        8336
-      ],
-      "id": "7bffac61-199d-4a3d-84e3-dad9370ee960",
+      "id": "8ddc982a-b27e-47ae-8978-79ca274158ae",
       "name": "Stop and Error13"
     },
     {
@@ -1079,10 +898,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -16864,
-        8064
+        -21920,
+        19136
       ],
-      "id": "226cd720-17ad-43a6-b4d7-1af9e9eadc8b",
+      "id": "6c2e8606-b823-48ca-b641-ed4d6cdbd32b",
       "name": "Stop and Error14"
     },
     {
@@ -1092,10 +911,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -16640,
-        7968
+        -21696,
+        19040
       ],
-      "id": "9ab5d42e-744e-491b-8f63-cd6f8456fd94",
+      "id": "7056c94d-9daa-4905-9fa0-6ffc087476f1",
       "name": "Stop and Error15"
     },
     {
@@ -1105,10 +924,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -16416,
-        7856
+        -21408,
+        19536
       ],
-      "id": "f3935cb6-cf33-4ec6-97c2-ca18bff66e2b",
+      "id": "53ba78e0-04a5-46e6-896e-ceed0253b816",
       "name": "Stop and Error16"
     },
     {
@@ -1118,10 +937,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -16224,
-        7760
+        -21280,
+        18832
       ],
-      "id": "ced1db07-976a-4ed2-be7a-234053c363a9",
+      "id": "62df29f1-36d2-47e2-bb03-278db623c68f",
       "name": "Stop and Error17"
     },
     {
@@ -1133,15 +952,17 @@
           "mode": "id"
         },
         "text": "={{ $json.output }}",
-        "otherOptions": {}
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.7,
       "position": [
-        -17680,
-        9408
+        -22736,
+        20480
       ],
-      "id": "12667cc3-0aa8-4e1e-acbf-b06e61553ff1",
+      "id": "3d533b01-d1c9-4e27-a26d-d0fd2ec9bece",
       "name": "Off-topic message to user1",
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -1164,10 +985,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        -18032,
-        9520
+        -23088,
+        20592
       ],
-      "id": "a09d9cb6-121c-497c-b63d-3361d924a824",
+      "id": "b2c07216-818b-482e-8cd3-7a011e74e5ed",
       "name": "Guardrail Fail reply to user agent1",
       "retryOnFail": true,
       "onError": "continueErrorOutput"
@@ -1179,10 +1000,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17712,
-        9728
+        -22768,
+        20800
       ],
-      "id": "6d90f5d2-1a41-4bd9-ad0d-6785dfb62545",
+      "id": "9bccdf40-750a-4f7d-9091-f5b264d42bab",
       "name": "Stop and Error"
     },
     {
@@ -1192,10 +1013,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17312,
-        9488
+        -22368,
+        20560
       ],
-      "id": "dd3e0962-00cf-4ea3-8bba-869b2c7877ec",
+      "id": "b04ddd70-15a9-4b12-b4fd-7ec3379a1ddf",
       "name": "Stop and Error18"
     },
     {
@@ -1218,10 +1039,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -16192,
-        7568
+        -21248,
+        18640
       ],
-      "id": "883134cf-b318-475e-9fc0-27c945e41999",
+      "id": "dced68d1-5a02-4e77-b19d-a61249664dc6",
       "name": "Call 'Sub workflow - PO Assistant - 06 stories creation'"
     },
     {
@@ -1246,10 +1067,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -15568,
-        7888
+        -20624,
+        18960
       ],
-      "id": "282191ce-b78a-4812-a83b-7b41d50ec532",
+      "id": "a5e82796-a5ec-4393-b6d3-e2e460fece68",
       "name": "Call 'Sub workflow - PO Assistant - 07 Jira integration'"
     },
     {
@@ -1269,12 +1090,138 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        -15888,
-        7760
+        -20944,
+        18832
       ],
-      "id": "02216867-7d3d-42e5-b87f-05227c59acfa",
+      "id": "6e0d3ad0-a0af-4c70-ac14-070d1e2c421a",
       "name": "Edit Fields",
       "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n\te.id AS focus_epic_id,\n\te.title as focus_epic_title,\n\te.description as focus_epic_description,\n\tf.id AS focus_feature_id,\n\tf.title as focus_feature_title,\n\tf.description as focus_feature_description,\n    f.priority AS focus_feature_priority,\n    f.status as focus_feature_status,\n\t(SELECT jsonb_agg(\n        jsonb_build_object(\n\t\t\t'feature_title', f1.title, \n\t\t\t'feature_description', f1.description,\n\t\t\t'feature_priority', f1.priority,\n            'status', f1.status) ORDER BY f1.id)\n\tFROM epics as e1 left join features as f1 on e1.id = f1.epic_id\n\twhere e1.id = e.id) as context_features,\n\t(SELECT\n        jsonb_build_object(\n\t\t\t'epic_title',e3.title,\n\t\t\t'epic_description', e3.description,\n\t\t\t'feature_title', f3.title, \n\t\t\t'feature_description', f3.description,\n\t\t\t'feature_id', f3.id,\n            'feature_priority', f3.priority,\n\t\t\t'feature_status', f3.status)\n\tFROM projects as p3 left join epics as e3 on p3.id = e3.project_id left join features as f3 on e3.id = f3.epic_id\n\twhere (e3.id, f3.id) > (e.id, f.id) AND f3.status = 'draft' AND e3.horizon ='Now' and p3.id = p.id\n\tORDER BY e3.id, f3.id\n\tLIMIT 1) as next_features,\n\t\t(SELECT count(f2.id) - 1\n\t\tFROM projects as p2 left join epics as e2 on p2.id = e2.project_id\n\t\tleft join features as f2 on e2.id = f2.epic_id\n\t\tWHERE e2.horizon ='Now' AND p2.channel_id = $1 and f2.status = 'draft') AS other_draft_features\nFROM projects as p left join epics as e on p.id = e.project_id\nleft join features as f on e.id = f.epic_id\nWHERE p.channel_id = $1 AND e.horizon = 'Now' AND f.status = 'draft'\nORDER BY e.id ASC, f.id ASC\nLIMIT 1",
+        "options": {
+          "queryReplacement": "={{ $('When Executed by Another Workflow').first().json.channel_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -23504,
+        20176
+      ],
+      "id": "7fd41489-59c8-44dc-8c69-a46296f8e075",
+      "name": "Get focus epic &  feature and Next epic & feature",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Returns every feature of the project, whatever its epic: id, epic title, title, priority, status, description (value and product rules). Takes no argument from you.",
+        "operation": "executeQuery",
+        "query": "SELECT \n  f.id,\n  e.title as epic_title,\n  f.title, \n  f.priority, \n  f.status, \n  f.description\nFROM features as f left join epics as e on f.epic_id = e.id\nwhere f.project_id = $1\nORDER BY e.id, f.id",
+        "options": {
+          "queryReplacement": "={{ [ $('Get Context').first().json.project_id ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.8,
+      "position": [
+        -22848,
+        20144
+      ],
+      "id": "e65b9fd1-1f92-4e22-99fb-fb052db5ee63",
+      "name": "read_features",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Returns the stories of one feature: id, title, description, priority. Takes the id of the feature, as returned by read_features.",
+        "operation": "executeQuery",
+        "query": "SELECT \n  id, \n  title, \n  description, \n  priority\nFROM stories \nwhere project_id = $2 AND feature_id = $1\nORDER BY id ",
+        "options": {
+          "queryReplacement": "={{ [ $fromAI('feature_id', 'Id of the feature', 'number'), $('Get Context').first().json.project_id ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.8,
+      "position": [
+        -22928,
+        20288
+      ],
+      "id": "1c961f0a-e083-457d-9bc5-108d15d8d955",
+      "name": "read_feature_stories",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH f AS (\n  SELECT id, epic_id FROM features WHERE id = $1::int AND project_id = $2::int\n),\ninput AS (\n  SELECT * FROM jsonb_to_recordset($3::jsonb) AS x(id int, title text, description text, priority text)\n),\nupd AS (\n  UPDATE stories s\n  SET title = i.title, description = i.description, priority = i.priority, updated_at = now()\n  FROM input i, f\n  WHERE s.id = i.id AND s.feature_id = f.id AND s.project_id = $2::int AND s.status = 'draft'\n  RETURNING s.id\n),\nins AS (\n  INSERT INTO stories (project_id, epic_id, feature_id, title, description, priority, status)\n  SELECT $2::int, f.epic_id, f.id, i.title, i.description, i.priority, 'draft'\n  FROM input i, f\n  WHERE i.id IS NULL\n     OR NOT EXISTS (SELECT 1 FROM stories s WHERE s.id = i.id AND s.feature_id = f.id AND s.project_id = $2::int)\n  RETURNING id\n),\ndel AS (\n  DELETE FROM stories s\n  USING f\n  WHERE s.feature_id = f.id AND s.project_id = $2::int AND s.status = 'draft'\n    AND jsonb_array_length($3::jsonb) > 0\n    AND s.id NOT IN (SELECT id FROM input WHERE id IS NOT NULL)\n  RETURNING s.id\n)\nSELECT (SELECT count(*) FROM upd) AS updated,\n       (SELECT count(*) FROM ins) AS inserted,\n       (SELECT count(*) FROM del) AS deleted;",
+        "options": {
+          "queryReplacement": "={{ [ $('Parse validated feature').first().json.output.id, $('Get Context').first().json.project_id, JSON.stringify($('Parse validated feature').first().json.output.stories) ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -22144,
+        19424
+      ],
+      "id": "35a286fa-32f5-4ff6-964e-d12b6e9a735d",
+      "name": "Sync feature stories",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM n8n_chat_histories\nWHERE session_id LIKE '%' || $1\n  AND (message->>'type' = 'tool'\n       OR (message->>'type' = 'ai' AND jsonb_typeof(message->'content') = 'array'))",
+        "options": {
+          "queryReplacement": "={{ [ $('When Executed by Another Workflow').first().json.channel_id + '-features' ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        -22640,
+        19680
+      ],
+      "id": "6543b178-e867-4e17-9e60-ae7ac0ced298",
+      "name": "Clean tool turns from memory",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "pinData": {},
@@ -1306,7 +1253,7 @@
             "index": 0
           },
           {
-            "node": "Get focus epic & focus feature",
+            "node": "Get focus epic &  feature and Next epic & feature",
             "type": "main",
             "index": 0
           }
@@ -1352,7 +1299,7 @@
             "index": 0
           },
           {
-            "node": "Get focus epic & focus feature",
+            "node": "Get focus epic &  feature and Next epic & feature",
             "type": "main",
             "index": 0
           }
@@ -1444,7 +1391,7 @@
             "index": 0
           },
           {
-            "node": "Split Out",
+            "node": "Sync feature stories",
             "type": "main",
             "index": 0
           }
@@ -1470,24 +1417,6 @@
         [
           {
             "node": "Stop and Error10",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Insert stories",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Stop and Error12",
             "type": "main",
             "index": 0
           }
@@ -1530,24 +1459,6 @@
         ]
       ]
     },
-    "Get focus epic & focus feature": {
-      "main": [
-        [
-          {
-            "node": "Merge context",
-            "type": "main",
-            "index": 1
-          }
-        ],
-        [
-          {
-            "node": "Stop and Error4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Features creator": {
       "main": [
         [
@@ -1558,6 +1469,11 @@
           },
           {
             "node": "Hide FEATURES_COMPLETE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Clean tool turns from memory",
             "type": "main",
             "index": 0
           }
@@ -1580,7 +1496,13 @@
             "index": 0
           }
         ],
-        [],
+        [
+          {
+            "node": "Send to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Stop and Error16",
@@ -1632,18 +1554,6 @@
         [
           {
             "node": "Stop and Error9",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert stories": {
-      "main": [
-        [],
-        [
-          {
-            "node": "Stop and Error13",
             "type": "main",
             "index": 0
           }
@@ -1708,6 +1618,58 @@
         [
           {
             "node": "Call 'Sub workflow - PO Assistant - 07 Jira integration'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get focus epic &  feature and Next epic & feature": {
+      "main": [
+        [
+          {
+            "node": "Merge context",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_features": {
+      "ai_tool": [
+        [
+          {
+            "node": "Features creator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_feature_stories": {
+      "ai_tool": [
+        [
+          {
+            "node": "Features creator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync feature stories": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error13",
             "type": "main",
             "index": 0
           }
